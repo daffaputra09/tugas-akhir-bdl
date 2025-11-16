@@ -1,9 +1,6 @@
 <?php
 $page_title = isset($mahasiswa) ? "Edit Mahasiswa" : "Tambah Mahasiswa";
 include 'views/header.php';
-
-$jurusan_list = $mahasiswaModel->getAllJurusan();
-$kelas_list = $mahasiswaModel->getAllKelas();
 ?>
 
 <div class="content-box">

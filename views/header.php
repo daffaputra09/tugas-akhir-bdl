@@ -20,6 +20,7 @@
             
             <nav class="sidebar-menu">
                 <a href="index.php?action=list" class="menu-link">Data Mahasiswa</a>
+                <a href="index.php?action=dosen_list" class="menu-link">Data Dosen</a>
             </nav>
         </aside>
 

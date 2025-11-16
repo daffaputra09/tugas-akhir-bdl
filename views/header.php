@@ -17,19 +17,41 @@
                 <h1>SIAKAD</h1>
                 <p>Sistem Akademik Kampus</p>
             </div>
-            
+
             <nav class="sidebar-menu">
-                <a href="index.php?action=list" class="menu-link">Data Mahasiswa</a>
-                <a href="index.php?action=dosen_list" class="menu-link">Data Dosen</a>
+                <?php
+                $listMenu = [
+                    [
+                        'url' => 'action=list',
+                        'label' => 'Data Mahasiswa'
+                    ],
+                    [
+                        'url' => 'action=dosen_list',
+                        'label' => 'Data Dosen'
+                    ],
+                    [
+                        'url' => 'action=jurusan_list',
+                        'label' => 'Data Jurusan'
+                    ],
+                    [
+                        'url' => 'action=kelas_list',
+                        'label' => 'Data Kelas'
+                    ]
+                ];
+                foreach ($listMenu as $menu) {
+                    echo '<a href="index.php?' . $menu['url'] . '" class="menu-link">' . $menu['label'] . '</a>' . "\n";
+                }
+                ?>
             </nav>
         </aside>
 
         <!-- wrapper -->
         <div class="main-wrapper">
             <header class="top-navbar">
-            <h1 class="page-title"><?php echo isset($page_title) ? $page_title : 'SIAKAD'; ?></h1>                <div class="user-info">
+                <h1 class="page-title"><?php echo isset($page_title) ? $page_title : 'SIAKAD'; ?></h1>
+                <div class="user-info">
                     <span>Admin</span>
                 </div>
             </header>
-            
+
             <main class="main-content">

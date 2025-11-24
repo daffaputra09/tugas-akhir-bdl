@@ -8,6 +8,8 @@ require_once 'models/JurusanModel.php';
 require_once 'controllers/JurusanController.php';
 require_once 'models/KelasModel.php';
 require_once 'controllers/KelasController.php';
+require_once 'models/JadwalModel.php';
+require_once 'controllers/JadwalController.php';
 
 // db
 $database = new Database();
@@ -20,6 +22,9 @@ $jurusan = new JurusanModel($db);
 $jurusanController = new JurusanController($jurusan);
 $kelas = new KelasModel($db);
 $kelasController = new KelasController($kelas, $jurusan);
+$jadwal = new JadwalModel($db);
+$jadwalController = new JadwalController($jadwal);
+
 
 $action = isset($_GET['action']) ? $_GET['action'] : 'list';
 
@@ -93,6 +98,26 @@ switch ($action) {
         break;
     case 'kelas_search':
         $kelasController->search();
+        break;
+
+    // Jadwal Routes
+    case 'jadwal_list':
+        $jadwalController->list();
+        break;
+    case 'jadwal_create':
+        $jadwalController->create();
+        break;
+    case 'jadwal_edit':
+        $jadwalController->edit();
+        break;
+    case 'jadwal_delete':
+        $jadwalController->delete();
+        break;
+    case 'jadwal_refresh':
+        $jadwalController->refresh();
+        break;
+    case 'jadwal_search':
+        $jadwalController->search();
         break;
 
     default:

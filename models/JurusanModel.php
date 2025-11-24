@@ -11,7 +11,7 @@ class JurusanModel
 
     public function getAllJurusan()
     {
-        $query = "SELECT id_jurusan, nama_jurusan, akreditasi FROM jurusan ORDER BY nama_jurusan";
+        $query = "SELECT id_jurusan, nama_jurusan, akreditasi FROM  $this->table_name  ORDER BY nama_jurusan";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         return $stmt;
@@ -66,8 +66,7 @@ class JurusanModel
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    public function
-    searchJurusan($keyword)
+    public function searchJurusan($keyword)
     {
         $query = "SELECT id_jurusan, nama_jurusan, akreditasi FROM jurusan WHERE nama_jurusan ILIKE :keyword ORDER BY nama_jurusan DESC";
         $stmt = $this->conn->prepare($query);

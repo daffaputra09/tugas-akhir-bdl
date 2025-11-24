@@ -244,6 +244,17 @@ body {
     background-color: #b91c1c;
 }
 
+.btn-warning {
+    background-color: #fbbf24;
+    color: white;
+    padding: 8px 15px;
+    font-size: 13px;
+}
+
+.btn-warning:hover {
+    background-color: #f59e0b;
+}
+
 .btn-group {
     display: flex;
     gap: 8px;
@@ -305,6 +316,9 @@ body {
 /* Search Box */
 .search-box {
     margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .search-input {

@@ -10,6 +10,10 @@ require_once 'models/KelasModel.php';
 require_once 'controllers/KelasController.php';
 require_once 'models/JadwalModel.php';
 require_once 'controllers/JadwalController.php';
+require_once 'models/MatakuliahModel.php';
+require_once 'controllers/MatakuliahController.php';
+require_once 'models/NilaiModel.php';
+require_once 'controllers/NilaiController.php';
 
 // db
 $database = new Database();
@@ -24,6 +28,10 @@ $kelas = new KelasModel($db);
 $kelasController = new KelasController($kelas, $jurusan);
 $jadwal = new JadwalModel($db);
 $jadwalController = new JadwalController($jadwal);
+$matakuliahModel = new MatakuliahModel($db);
+$matakuliahController = new MatakuliahController($matakuliahModel);
+$nilaiModel = new NilaiModel($db);
+$nilaiController = new NilaiController($nilaiModel);
 
 
 $action = isset($_GET['action']) ? $_GET['action'] : 'list';
@@ -127,6 +135,43 @@ switch ($action) {
         break;
     case 'jadwal_search':
         $jadwalController->search();
+        break;
+
+    // Matakuliah Routes
+    case 'matakuliah_list':
+        $matakuliahController->list();
+        break;
+    case 'matakuliah_create':
+        $matakuliahController->create();
+        break;
+    case 'matakuliah_edit':
+        $matakuliahController->edit();
+        break;
+    case 'matakuliah_delete':
+        $matakuliahController->delete();
+        break;
+    case 'matakuliah_search':
+        $matakuliahController->search();
+        break;
+
+    // Nilai Routes
+    case 'nilai_list':
+        $nilaiController->list();
+        break;
+    case 'nilai_create':
+        $nilaiController->create();
+        break;
+    case 'nilai_edit':
+        $nilaiController->edit();
+        break;
+    case 'nilai_delete':
+        $nilaiController->delete();
+        break;
+    case 'nilai_search':
+        $nilaiController->search();
+        break;
+    case 'nilai_refresh':
+        $nilaiController->refresh();
         break;
 
     default:

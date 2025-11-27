@@ -44,6 +44,14 @@
                     [
                         'url' => 'action=jadwal_list',
                         'label' => 'Data Jadwal'
+                    ],
+                    [
+                        'url' => 'action=matakuliah_list',
+                        'label' => 'Data Matakuliah'
+                    ],
+                    [
+                        'url' => 'action=nilai_list',
+                        'label' => 'Data Nilai'
                     ]
                 ];
                 foreach ($listMenu as $menu) {

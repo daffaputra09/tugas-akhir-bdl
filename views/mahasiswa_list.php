@@ -87,6 +87,8 @@ include 'views/header.php';
                                     <a href="index.php?action=delete&id=<?php echo $row['id_mahasiswa']; ?>" 
                                        class="btn btn-delete"
                                        onclick="return confirm('Apakah Anda yakin ingin menghapus mahasiswa ini?')">Hapus</a>
+                                    <a href="index.php?action=detail&nim=<?php echo $row['nim']; ?>" 
+                                       class="btn btn-view">Detail</a>
                                 </div>
                             </td>
                         </tr>

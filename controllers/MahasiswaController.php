@@ -92,6 +92,17 @@ class MahasiswaController
         }
         include 'views/mahasiswa_list.php';
     }
+
+    public function detail(){
+        $nim = $_GET['nim'];
+        $mahasiswa = $this->model->getMahasiswaByNIM($nim);
+        include 'views/mahasiswa_detail.php';
+    }
+
+    public function getDashboardStats(){
+        $stats = $this->model->getDashboardStats();
+        return $stats;
+    }
 }
 ?>
 

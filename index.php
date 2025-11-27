@@ -29,6 +29,11 @@ $jadwalController = new JadwalController($jadwal);
 $action = isset($_GET['action']) ? $_GET['action'] : 'list';
 
 switch ($action) {
+    case 'dashboard':
+        $stats = $controller->getDashboardStats();
+        include 'views/dashboard.php';
+        break;
+        
     case 'list':
         $controller->list();
         break;
@@ -47,6 +52,10 @@ switch ($action) {
 
     case 'search':
         $controller->search();
+        break;
+        
+    case 'detail':
+        $controller->detail();
         break;
 
     // Dosen routes

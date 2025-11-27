@@ -3,10 +3,11 @@ class Database
 {
     // Informasi koneksi database - GANTI dengan settingan lokal Anda
     private $host = "localhost";
-    private $port = "5432";
-    private $db_name = "akademik1";
+    private $port = "5430";
+    private $db_name = "db_akademik_kampus";
     private $username = "postgres";
-    private $password = "";
+    private $password = "12345678"; // Default username PostgreSQL
+    // Ganti dengan password PostgreSQL Anda
     public $conn;
     public function getConnection()
     {

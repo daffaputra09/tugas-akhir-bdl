@@ -22,6 +22,10 @@
                 <?php
                 $listMenu = [
                     [
+                        'url' => 'action=dashboard',
+                        'label' => 'Dashboard'
+                    ],
+                    [
                         'url' => 'action=list',
                         'label' => 'Data Mahasiswa'
                     ],

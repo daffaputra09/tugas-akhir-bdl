@@ -123,12 +123,8 @@ class MahasiswaModel {
     // METHOD 8: Get dashboard statistics
     public function getDashboardStats() {
         $query = "SELECT 
-                    COUNT(*) as total_mahasiswa,
-                    COUNT(DISTINCT id_jurusan) as total_jurusan,
-                    COUNT(DISTINCT id_kelas) as total_kelas,
-                    COUNT(CASE WHEN jenis_kelamin = 'L' THEN 1 END) as total_laki,
-                    COUNT(CASE WHEN jenis_kelamin = 'P' THEN 1 END) as total_perempuan
-                  FROM " . $this->table_name;
+                    *
+                  FROM vw_dashboard";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         return $stmt->fetch(PDO::FETCH_ASSOC);
@@ -200,6 +196,20 @@ class MahasiswaModel {
         $stmt->execute();
         return $stmt;
     }
+
+    // METHOD 13: Detail mahasiswa by NIM
+    public function getMahasiswaByNIM($nim) {
+        $query = "SELECT 
+                    *
+                  FROM vw_detail_mahasiswa m
+                  WHERE m.nim = :nim";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(":nim", $nim);
+        $stmt->execute();
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+
 }
 ?>
 

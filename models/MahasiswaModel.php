@@ -19,6 +19,7 @@ class MahasiswaModel {
                     m.no_hp,
                     m.tahun_masuk,
                     m.semester,
+                    m.foto,
                     j.nama_jurusan,
                     k.nama_kelas,
                     m.id_jurusan,
@@ -35,8 +36,8 @@ class MahasiswaModel {
     // METHOD 2: Create mahasiswa baru
     public function createMahasiswa($data) {
         $query = "INSERT INTO " . $this->table_name . " 
-            (nim, nama_mahasiswa, id_jurusan, tahun_masuk, email, jenis_kelamin, no_hp, semester, id_kelas)
-            VALUES (:nim, :nama_mahasiswa, :id_jurusan, :tahun_masuk, :email, :jenis_kelamin, :no_hp, :semester, :id_kelas)";
+            (nim, nama_mahasiswa, id_jurusan, tahun_masuk, email, jenis_kelamin, no_hp, semester, id_kelas, foto)
+            VALUES (:nim, :nama_mahasiswa, :id_jurusan, :tahun_masuk, :email, :jenis_kelamin, :no_hp, :semester, :id_kelas, :foto)";
         
         $stmt = $this->conn->prepare($query);
 
@@ -50,23 +51,40 @@ class MahasiswaModel {
         $stmt->bindParam(":no_hp", $data['no_hp']);
         $stmt->bindParam(":semester", $data['semester']);
         $stmt->bindParam(":id_kelas", $data['id_kelas']);
+        $stmt->bindParam(":foto", $data['foto']);
 
         return $stmt->execute();
     }
 
     // METHOD 3: Update mahasiswa
     public function updateMahasiswa($id, $data) {
-        $query = "UPDATE " . $this->table_name . "
-            SET nim = :nim, 
-                nama_mahasiswa = :nama_mahasiswa,
-                id_jurusan = :id_jurusan,
-                tahun_masuk = :tahun_masuk,
-                email = :email, 
-                jenis_kelamin = :jenis_kelamin,
-                no_hp = :no_hp, 
-                semester = :semester,
-                id_kelas = :id_kelas
-            WHERE id_mahasiswa = :id";
+        // Jika foto tidak diupdate, jangan update kolom foto
+        if (isset($data['foto']) && !empty($data['foto'])) {
+            $query = "UPDATE " . $this->table_name . "
+                SET nim = :nim, 
+                    nama_mahasiswa = :nama_mahasiswa,
+                    id_jurusan = :id_jurusan,
+                    tahun_masuk = :tahun_masuk,
+                    email = :email, 
+                    jenis_kelamin = :jenis_kelamin,
+                    no_hp = :no_hp, 
+                    semester = :semester,
+                    id_kelas = :id_kelas,
+                    foto = :foto
+                WHERE id_mahasiswa = :id";
+        } else {
+            $query = "UPDATE " . $this->table_name . "
+                SET nim = :nim, 
+                    nama_mahasiswa = :nama_mahasiswa,
+                    id_jurusan = :id_jurusan,
+                    tahun_masuk = :tahun_masuk,
+                    email = :email, 
+                    jenis_kelamin = :jenis_kelamin,
+                    no_hp = :no_hp, 
+                    semester = :semester,
+                    id_kelas = :id_kelas
+                WHERE id_mahasiswa = :id";
+        }
 
         $stmt = $this->conn->prepare($query);
 
@@ -80,16 +98,32 @@ class MahasiswaModel {
         $stmt->bindParam(":no_hp", $data['no_hp']);
         $stmt->bindParam(":semester", $data['semester']);
         $stmt->bindParam(":id_kelas", $data['id_kelas']);
+        
+        if (isset($data['foto']) && !empty($data['foto'])) {
+            $stmt->bindParam(":foto", $data['foto']);
+        }
 
         return $stmt->execute();
     }
 
     // METHOD 4: Delete mahasiswa
     public function deleteMahasiswa($id) {
+        // Ambil path foto sebelum delete
+        $mahasiswa = $this->getMahasiswaById($id);
+        $foto_path = $mahasiswa['foto'] ?? null;
+        
         $query = "DELETE FROM " . $this->table_name . " WHERE id_mahasiswa = :id";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":id", $id);
-        return $stmt->execute();
+        
+        if ($stmt->execute()) {
+            // Hapus file foto jika ada
+            if ($foto_path && file_exists($foto_path)) {
+                unlink($foto_path);
+            }
+            return true;
+        }
+        return false;
     }
 
     // METHOD 5: Get single mahasiswa by ID
@@ -181,6 +215,7 @@ class MahasiswaModel {
                     m.no_hp,
                     m.tahun_masuk,
                     m.semester,
+                    m.foto,
                     j.nama_jurusan,
                     k.nama_kelas
                   FROM " . $this->table_name . " m

@@ -15,7 +15,7 @@ include 'views/header.php';
         </div>
     <?php endif; ?>
 
-    <form method="POST" action="">
+    <form method="POST" action="" enctype="multipart/form-data">
         <div class="form-grid">
             <div class="form-group">
                 <label for="nim" class="form-label">NIM *</label>
@@ -141,6 +141,25 @@ include 'views/header.php';
                        value="<?php echo isset($mahasiswa) ? $mahasiswa['semester'] : '1'; ?>" 
                        required>
             </div>
+        </div>
+
+        <div class="form-group">
+            <label for="foto" class="form-label">Foto Mahasiswa</label>
+            <?php if (isset($mahasiswa) && !empty($mahasiswa['foto'])): ?>
+                <div style="margin-bottom: 10px;">
+                    <img src="<?php echo htmlspecialchars($mahasiswa['foto']); ?>" 
+                         alt="Foto Mahasiswa" 
+                         style="max-width: 200px; max-height: 200px; border-radius: 5px; border: 1px solid #ddd; padding: 5px;">
+                    <br>
+                    <small style="color: #666;">Foto saat ini</small>
+                </div>
+            <?php endif; ?>
+            <input type="file" 
+                   id="foto" 
+                   name="foto" 
+                   class="form-input" 
+                   accept="image/jpeg,image/jpg,image/png,image/gif">
+            <small style="color: #666; font-size: 12px;">Format: JPG, PNG, GIF. Maksimal 2MB</small>
         </div>
 
         <div class="form-actions">

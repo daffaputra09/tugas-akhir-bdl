@@ -46,6 +46,7 @@ include 'views/header.php';
                 <thead>
                     <tr>
                         <th>No</th>
+                        <th>Foto</th>
                         <th>NIM</th>
                         <th>Nama Mahasiswa</th>
                         <th>Jurusan</th>
@@ -65,6 +66,17 @@ include 'views/header.php';
                     ?>
                         <tr>
                             <td><?php echo $no++; ?></td>
+                            <td>
+                                <?php if (!empty($row['foto']) && file_exists($row['foto'])): ?>
+                                    <img src="<?php echo htmlspecialchars($row['foto']); ?>" 
+                                         alt="Foto <?php echo htmlspecialchars($row['nama_mahasiswa']); ?>" 
+                                         style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px; border: 1px solid #ddd;">
+                                <?php else: ?>
+                                    <div style="width: 50px; height: 50px; background-color: #f0f0f0; border-radius: 5px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 12px;">
+                                        No Photo
+                                    </div>
+                                <?php endif; ?>
+                            </td>
                             <td><strong><?php echo htmlspecialchars($row['nim']); ?></strong></td>
                             <td><?php echo htmlspecialchars($row['nama_mahasiswa']); ?></td>
                             <td><?php echo htmlspecialchars($row['nama_jurusan'] ?? '-'); ?></td>

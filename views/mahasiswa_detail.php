@@ -13,10 +13,14 @@ include 'views/header.php';
         <!-- Bagian Kiri - Foto -->
         <div class="photo-section">
             <div class="content-box" style="min-width: 300px; display: flex; justify-content: center; align-items: center; height: 300px; width: 300px;">
-                <?php if (!empty($mahasiswa['foto']) && file_exists('uploads/' . $mahasiswa['foto'])): ?>
-                    <img src="uploads/<?= htmlspecialchars($mahasiswa['foto']) ?>" alt="Foto Mahasiswa">
+                <?php if (!empty($mahasiswa['foto']) && file_exists($mahasiswa['foto'])): ?>
+                    <img src="<?= htmlspecialchars($mahasiswa['foto']) ?>" 
+                         alt="Foto <?= htmlspecialchars($mahasiswa['nama_mahasiswa']) ?>" 
+                         style="max-width: 100%; max-height: 100%; border-radius: 5px; object-fit: cover;">
                 <?php else: ?>
-                    <div class="photo-placeholder">👤</div>
+                    <div class="photo-placeholder" style="width: 200px; height: 200px; background-color: #f0f0f0; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 48px; color: #999;">
+                        👤
+                    </div>
                 <?php endif; ?>
             </div>
         </div>

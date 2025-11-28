@@ -12,64 +12,137 @@ class KelasController
 
     public function list(): void
     {
-        $kelas = $this->kelasModel->getAllKelas();
-        include 'views/kelas_list.php';
+        try {
+            $kelas = $this->kelasModel->getAllKelas();
+            if (!$kelas) {
+                throw new Exception("Gagal mengambil data kelas");
+            }
+            include 'views/kelas_list.php';
+        } catch (Exception $e) {
+            error_log("Error in list: " . $e->getMessage());
+            $error = $e->getMessage();
+            include 'views/error.php';
+        }
     }
 
     public function create(): void
     {
+        $error = null;
+        
         if ($_POST) {
-            $data = [
-                'nama_kelas' => $_POST['nama_kelas'],
-                'id_jurusan' => $_POST['id_jurusan'],
-            ];
+            try {
+                $data = [
+                    'nama_kelas' => $_POST['nama_kelas'] ?? null,
+                    'id_jurusan' => $_POST['id_jurusan'] ?? null,
+                ];
 
-            if ($this->kelasModel->createKelas($data)) {
+                // Validasi data
+                if (empty($data['nama_kelas'])) {
+                    throw new Exception("Nama Kelas tidak boleh kosong");
+                }
+                if (empty($data['id_jurusan'])) {
+                    throw new Exception("Jurusan harus dipilih");
+                }
+
+                if (!$this->kelasModel->createKelas($data)) {
+                    throw new Exception("Gagal menyimpan data kelas ke database");
+                }
+                
                 header("Location: index.php?action=kelas_list&message=created");
                 exit();
-            } else {
-                $error = "Gagal menambah kelas";
+            } catch (Exception $e) {
+                error_log("Error in create: " . $e->getMessage());
+                $error = $e->getMessage();
             }
         }
 
-        $jurusan_list = $this->jurusanModel->getAllJurusan();
-        include 'views/kelas_form.php';
+        try {
+            $jurusan_list = $this->jurusanModel->getAllJurusan();
+            if (!$jurusan_list) {
+                throw new Exception("Gagal memuat data jurusan");
+            }
+            include 'views/kelas_form.php';
+        } catch (Exception $e) {
+            error_log("Error loading jurusan: " . $e->getMessage());
+            $error = $e->getMessage();
+            include 'views/error.php';
+        }
     }
 
     public function edit(): void
     {
-        $id = $_GET['id'];
+        $error = null;
+        $id = $_GET['id'] ?? null;
+
+        if (!$id) {
+            header("Location: index.php?action=kelas_list");
+            exit();
+        }
 
         if ($_POST) {
-            $data = [
-                'nama_kelas' => $_POST['nama_kelas'],
-                'id_jurusan' => $_POST['id_jurusan'],
-            ];
+            try {
+                $data = [
+                    'nama_kelas' => $_POST['nama_kelas'] ?? null,
+                    'id_jurusan' => $_POST['id_jurusan'] ?? null,
+                ];
 
-            if ($this->kelasModel->updateKelas($id, $data)) {
+                // Validasi data
+                if (empty($data['nama_kelas'])) {
+                    throw new Exception("Nama Kelas tidak boleh kosong");
+                }
+                if (empty($data['id_jurusan'])) {
+                    throw new Exception("Jurusan harus dipilih");
+                }
+
+                if (!$this->kelasModel->updateKelas($id, $data)) {
+                    throw new Exception("Gagal mengupdate data kelas");
+                }
+                
                 header("Location: index.php?action=kelas_list&message=updated");
                 exit();
-            } else {
-                $error = "Gagal mengupdate kelas";
+            } catch (Exception $e) {
+                error_log("Error in edit: " . $e->getMessage());
+                $error = $e->getMessage();
             }
         }
 
-        $kelas = $this->kelasModel->getKelasById($id);
-        $jurusan_list = $this->jurusanModel->getAllJurusan();
-        include 'views/kelas_form.php';
+        try {
+            $kelas = $this->kelasModel->getKelasById($id);
+            if (!$kelas) {
+                throw new Exception("Data kelas tidak ditemukan");
+            }
+            $jurusan_list = $this->jurusanModel->getAllJurusan();
+            if (!$jurusan_list) {
+                throw new Exception("Gagal memuat data jurusan");
+            }
+            include 'views/kelas_form.php';
+        } catch (Exception $e) {
+            error_log("Error loading edit data: " . $e->getMessage());
+            header("Location: index.php?action=kelas_list&message=search_error");
+            exit();
+        }
     }
 
     public function delete(): void
     {
-        $id = $_GET['id'];
-        
-        $result = $this->kelasModel->deleteKelas($id);
+        try {
+            $id = $_GET['id'] ?? null;
+            
+            if (!$id) {
+                throw new Exception("ID tidak valid");
+            }
 
-        if ($result === true) {
-            header("Location: index.php?action=kelas_list&message=deleted");
-        } elseif ($result === 'fk_error') {
-            header("Location: index.php?action=kelas_list&message=fk_error");
-        } else {
+            $result = $this->kelasModel->deleteKelas($id);
+
+            if ($result === true) {
+                header("Location: index.php?action=kelas_list&message=deleted");
+            } elseif ($result === 'fk_error') {
+                header("Location: index.php?action=kelas_list&message=fk_error");
+            } else {
+                throw new Exception("Gagal menghapus data kelas");
+            }
+        } catch (Exception $e) {
+            error_log("Error in delete: " . $e->getMessage());
             header("Location: index.php?action=kelas_list&message=delete_error");
         }
         exit();
@@ -77,12 +150,26 @@ class KelasController
 
     public function search(): void
     {
-        if (isset($_GET['keyword']) && !empty($_GET['keyword'])) {
-            $kelas = $this->kelasModel->searchKelas($_GET['keyword']);
-        } else {
-            $kelas = $this->kelasModel->getAllKelas();
+        $error = null;
+        
+        try {
+            if (isset($_GET['keyword']) && !empty($_GET['keyword'])) {
+                $kelas = $this->kelasModel->searchKelas($_GET['keyword']);
+                if (!$kelas) {
+                    throw new Exception("Pencarian gagal");
+                }
+            } else {
+                $kelas = $this->kelasModel->getAllKelas();
+                if (!$kelas) {
+                    throw new Exception("Gagal mengambil data kelas");
+                }
+            }
+            include 'views/kelas_list.php';
+        } catch (Exception $e) {
+            error_log("Error in search: " . $e->getMessage());
+            $error = $e->getMessage();
+            include 'views/error.php';
         }
-        include 'views/kelas_list.php';
     }
 }
 ?>

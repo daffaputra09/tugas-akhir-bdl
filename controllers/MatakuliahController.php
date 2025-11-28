@@ -10,67 +10,155 @@ class MatakuliahController
 
     public function list(): void
     {
-        $matakuliah = $this->model->getAllMatakuliah();
-        include 'views/matakuliah_list.php';
+        try {
+            $matakuliah = $this->model->getAllMatakuliah();
+            if (!$matakuliah) {
+                throw new Exception("Gagal mengambil data matakuliah");
+            }
+            include 'views/matakuliah_list.php';
+        } catch (Exception $e) {
+            error_log("Error in list: " . $e->getMessage());
+            $error = $e->getMessage();
+            include 'views/error.php';
+        }
     }
 
     public function create(): void
     {
+        $error = null;
+        
         if ($_POST) {
-            $data = [
-                'kode_mk' => $_POST['kode_mk'],
-                'nama_mk' => $_POST['nama_mk'],
-                'sks' => $_POST['sks'],
-                'semester' => $_POST['semester'],
-                'id_jurusan' => !empty($_POST['id_jurusan']) ? $_POST['id_jurusan'] : null,
-            ];
+            try {
+                $data = [
+                    'kode_mk' => $_POST['kode_mk'] ?? null,
+                    'nama_mk' => $_POST['nama_mk'] ?? null,
+                    'sks' => $_POST['sks'] ?? null,
+                    'semester' => $_POST['semester'] ?? null,
+                    'id_jurusan' => !empty($_POST['id_jurusan']) ? $_POST['id_jurusan'] : null,
+                ];
 
-            if ($this->model->createMatakuliah($data)) {
+                // Validasi data
+                if (empty($data['kode_mk'])) {
+                    throw new Exception("Kode Matakuliah tidak boleh kosong");
+                }
+                if (empty($data['nama_mk'])) {
+                    throw new Exception("Nama Matakuliah tidak boleh kosong");
+                }
+                if (empty($data['sks']) || !is_numeric($data['sks']) || $data['sks'] <= 0 || $data['sks'] > 24) {
+                    throw new Exception("SKS harus angka antara 1-24");
+                }
+                if (empty($data['semester']) || !is_numeric($data['semester']) || $data['semester'] <= 0 || $data['semester'] > 8) {
+                    throw new Exception("Semester harus angka antara 1-8");
+                }
+
+                if (!$this->model->createMatakuliah($data)) {
+                    throw new Exception("Gagal menyimpan data matakuliah ke database");
+                }
+                
                 header("Location: index.php?action=matakuliah_list&message=created");
                 exit();
-            } else {
-                $error = "Gagal menambah matakuliah";
+            } catch (Exception $e) {
+                error_log("Error in create: " . $e->getMessage());
+                $error = $e->getMessage();
             }
         }
-        $jurusan_list = $this->model->getAllJurusan();
-        include 'views/matakuliah_form.php';
+        
+        try {
+            $jurusan_list = $this->model->getAllJurusan();
+            if (!$jurusan_list) {
+                throw new Exception("Gagal memuat data jurusan");
+            }
+            include 'views/matakuliah_form.php';
+        } catch (Exception $e) {
+            error_log("Error loading jurusan: " . $e->getMessage());
+            $error = $e->getMessage();
+            include 'views/error.php';
+        }
     }
 
     public function edit(): void
     {
-        $id = $_GET['id'];
+        $error = null;
+        $id = $_GET['id'] ?? null;
+
+        if (!$id) {
+            header("Location: index.php?action=matakuliah_list");
+            exit();
+        }
 
         if ($_POST) {
-            $data = [
-                'kode_mk' => $_POST['kode_mk'],
-                'nama_mk' => $_POST['nama_mk'],
-                'sks' => $_POST['sks'],
-                'semester' => $_POST['semester'],
-                'id_jurusan' => !empty($_POST['id_jurusan']) ? $_POST['id_jurusan'] : null,
-            ];
+            try {
+                $data = [
+                    'kode_mk' => $_POST['kode_mk'] ?? null,
+                    'nama_mk' => $_POST['nama_mk'] ?? null,
+                    'sks' => $_POST['sks'] ?? null,
+                    'semester' => $_POST['semester'] ?? null,
+                    'id_jurusan' => !empty($_POST['id_jurusan']) ? $_POST['id_jurusan'] : null,
+                ];
 
-            if ($this->model->updateMatakuliah($id, $data)) {
+                // Validasi data
+                if (empty($data['kode_mk'])) {
+                    throw new Exception("Kode Matakuliah tidak boleh kosong");
+                }
+                if (empty($data['nama_mk'])) {
+                    throw new Exception("Nama Matakuliah tidak boleh kosong");
+                }
+                if (empty($data['sks']) || !is_numeric($data['sks']) || $data['sks'] <= 0 || $data['sks'] > 24) {
+                    throw new Exception("SKS harus angka antara 1-24");
+                }
+                if (empty($data['semester']) || !is_numeric($data['semester']) || $data['semester'] <= 0 || $data['semester'] > 8) {
+                    throw new Exception("Semester harus angka antara 1-8");
+                }
+
+                if (!$this->model->updateMatakuliah($id, $data)) {
+                    throw new Exception("Gagal mengupdate data matakuliah");
+                }
+                
                 header("Location: index.php?action=matakuliah_list&message=updated");
                 exit();
-            } else {
-                $error = "Gagal mengupdate matakuliah";
+            } catch (Exception $e) {
+                error_log("Error in edit: " . $e->getMessage());
+                $error = $e->getMessage();
             }
         }
 
-        $matakuliah = $this->model->getMatakuliahById($id);
-        $jurusan_list = $this->model->getAllJurusan();
-        include 'views/matakuliah_form.php';
+        try {
+            $matakuliah = $this->model->getMatakuliahById($id);
+            if (!$matakuliah) {
+                throw new Exception("Data matakuliah tidak ditemukan");
+            }
+            $jurusan_list = $this->model->getAllJurusan();
+            if (!$jurusan_list) {
+                throw new Exception("Gagal memuat data jurusan");
+            }
+            include 'views/matakuliah_form.php';
+        } catch (Exception $e) {
+            error_log("Error loading edit data: " . $e->getMessage());
+            header("Location: index.php?action=matakuliah_list&message=search_error");
+            exit();
+        }
     }
 
     public function delete(): void
     {
-        $id = $_GET['id'];
-        $result = $this->model->deleteMatakuliah($id);
-        if ($result === true) {
-            header("Location: index.php?action=matakuliah_list&message=deleted");
-        } elseif ($result === 'fk_error') {
-            header("Location: index.php?action=matakuliah_list&message=fk_error");
-        } else {
+        try {
+            $id = $_GET['id'] ?? null;
+            
+            if (!$id) {
+                throw new Exception("ID tidak valid");
+            }
+
+            $result = $this->model->deleteMatakuliah($id);
+            
+            if ($result === true) {
+                header("Location: index.php?action=matakuliah_list&message=deleted");
+            } elseif ($result === 'fk_error') {
+                header("Location: index.php?action=matakuliah_list&message=fk_error");
+            } else {
+                throw new Exception("Gagal menghapus data matakuliah");
+            }
+        } catch (Exception $e) {
+            error_log("Error in delete: " . $e->getMessage());
             header("Location: index.php?action=matakuliah_list&message=delete_error");
         }
         exit();
@@ -78,13 +166,26 @@ class MatakuliahController
 
     public function search(): void
     {
-        if (isset($_GET['keyword']) && !empty($_GET['keyword'])) {
-            $matakuliah = $this->model->searchMatakuliah($_GET['keyword']);
-        } else {
-            $matakuliah = $this->model->getAllMatakuliah();
+        $error = null;
+        
+        try {
+            if (isset($_GET['keyword']) && !empty($_GET['keyword'])) {
+                $matakuliah = $this->model->searchMatakuliah($_GET['keyword']);
+                if (!$matakuliah) {
+                    throw new Exception("Pencarian gagal");
+                }
+            } else {
+                $matakuliah = $this->model->getAllMatakuliah();
+                if (!$matakuliah) {
+                    throw new Exception("Gagal mengambil data matakuliah");
+                }
+            }
+            include 'views/matakuliah_list.php';
+        } catch (Exception $e) {
+            error_log("Error in search: " . $e->getMessage());
+            $error = $e->getMessage();
+            include 'views/error.php';
         }
-        include 'views/matakuliah_list.php';
     }
 }
 ?>
-

@@ -10,58 +10,129 @@ class JurusanController
 
     public function list(): void
     {
-        $jurusan = $this->model->getAllJurusan();
-        include 'views/jurusan_list.php';
+        try {
+            $jurusan = $this->model->getAllJurusan();
+            if (!$jurusan) {
+                throw new Exception("Gagal mengambil data jurusan");
+            }
+            include 'views/jurusan_list.php';
+        } catch (Exception $e) {
+            error_log("Error in list: " . $e->getMessage());
+            $error = $e->getMessage();
+            include 'views/error.php';
+        }
     }
 
     public function create(): void
     {
+        $error = null;
+        
         if ($_POST) {
-            $data = [
-                'nama_jurusan' => $_POST['nama_jurusan'],
-                'akreditasi' => $_POST['akreditasi'],
-            ];
+            try {
+                $data = [
+                    'nama_jurusan' => $_POST['nama_jurusan'] ?? null,
+                    'akreditasi' => $_POST['akreditasi'] ?? null,
+                ];
 
-            if ($this->model->createJurusan($data)) {
+                // Validasi data
+                if (empty($data['nama_jurusan'])) {
+                    throw new Exception("Nama Jurusan tidak boleh kosong");
+                }
+                if (empty($data['akreditasi'])) {
+                    throw new Exception("Akreditasi tidak boleh kosong");
+                }
+                if (!in_array($data['akreditasi'], ['A', 'B', 'C'])) {
+                    throw new Exception("Akreditasi harus A, B, atau C");
+                }
+
+                if (!$this->model->createJurusan($data)) {
+                    throw new Exception("Gagal menyimpan data jurusan ke database");
+                }
+                
                 header("Location: index.php?action=jurusan_list&message=created");
                 exit();
-            } else {
-                $error = "Gagal menambah jurusan";
+            } catch (Exception $e) {
+                error_log("Error in create: " . $e->getMessage());
+                $error = $e->getMessage();
             }
         }
-        $jurusan_list = $this->model->getAllJurusan();
+        
         include 'views/jurusan_form.php';
     }
 
     public function edit(): void
     {
-        $id = $_GET['id'];
+        $error = null;
+        $id = $_GET['id'] ?? null;
+
+        if (!$id) {
+            header("Location: index.php?action=jurusan_list");
+            exit();
+        }
 
         if ($_POST) {
-            $data = [
-                'nama_jurusan' => $_POST['nama_jurusan'],
-                'akreditasi' => $_POST['akreditasi'],
-            ];
+            try {
+                $data = [
+                    'nama_jurusan' => $_POST['nama_jurusan'] ?? null,
+                    'akreditasi' => $_POST['akreditasi'] ?? null,
+                ];
 
-            if ($this->model->updateJurusan($id, $data)) {
+                // Validasi data
+                if (empty($data['nama_jurusan'])) {
+                    throw new Exception("Nama Jurusan tidak boleh kosong");
+                }
+                if (empty($data['akreditasi'])) {
+                    throw new Exception("Akreditasi tidak boleh kosong");
+                }
+                if (!in_array($data['akreditasi'], ['A', 'B', 'C'])) {
+                    throw new Exception("Akreditasi harus A, B, atau C");
+                }
+
+                if (!$this->model->updateJurusan($id, $data)) {
+                    throw new Exception("Gagal mengupdate data jurusan");
+                }
+                
                 header("Location: index.php?action=jurusan_list&message=updated");
                 exit();
-            } else {
-                $error = "Gagal mengupdate jurusan";
+            } catch (Exception $e) {
+                error_log("Error in edit: " . $e->getMessage());
+                $error = $e->getMessage();
             }
         }
 
-        $jurusan = $this->model->getJurusanById($id);
-        $jurusan_list = $this->model->getAllJurusan();
-        include 'views/jurusan_form.php';
+        try {
+            $jurusan = $this->model->getJurusanById($id);
+            if (!$jurusan) {
+                throw new Exception("Data jurusan tidak ditemukan");
+            }
+            include 'views/jurusan_form.php';
+        } catch (Exception $e) {
+            error_log("Error loading edit data: " . $e->getMessage());
+            header("Location: index.php?action=jurusan_list&message=search_error");
+            exit();
+        }
     }
 
     public function delete(): void
     {
-        $id = $_GET['id'];
-        if ($this->model->deleteJurusan($id)) {
-            header("Location: index.php?action=jurusan_list&message=deleted");
-        } else {
+        try {
+            $id = $_GET['id'] ?? null;
+            
+            if (!$id) {
+                throw new Exception("ID tidak valid");
+            }
+
+            $result = $this->model->deleteJurusan($id);
+            
+            if ($result === true) {
+                header("Location: index.php?action=jurusan_list&message=deleted");
+            } elseif ($result === 'fk_error') {
+                header("Location: index.php?action=jurusan_list&message=fk_error");
+            } else {
+                throw new Exception("Gagal menghapus data jurusan");
+            }
+        } catch (Exception $e) {
+            error_log("Error in delete: " . $e->getMessage());
             header("Location: index.php?action=jurusan_list&message=delete_error");
         }
         exit();
@@ -69,13 +140,26 @@ class JurusanController
 
     public function search(): void
     {
-        if (isset($_GET['keyword']) && !empty($_GET['keyword'])) {
-            $jurusan = $this->model->searchJurusan($_GET['keyword']);
-        } else {
-            $jurusan = $this->model->getAllJurusan();
+        $error = null;
+        
+        try {
+            if (isset($_GET['keyword']) && !empty($_GET['keyword'])) {
+                $jurusan = $this->model->searchJurusan($_GET['keyword']);
+                if (!$jurusan) {
+                    throw new Exception("Pencarian gagal");
+                }
+            } else {
+                $jurusan = $this->model->getAllJurusan();
+                if (!$jurusan) {
+                    throw new Exception("Gagal mengambil data jurusan");
+                }
+            }
+            include 'views/jurusan_list.php';
+        } catch (Exception $e) {
+            error_log("Error in search: " . $e->getMessage());
+            $error = $e->getMessage();
+            include 'views/error.php';
         }
-        include 'views/jurusan_list.php';
     }
 }
 ?>
-

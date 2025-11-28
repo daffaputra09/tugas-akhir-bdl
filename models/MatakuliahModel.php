@@ -31,45 +31,78 @@ class MatakuliahModel
 
     public function createMatakuliah($data)
     {
-        $query = "INSERT INTO " . $this->table_name . "
-                  (kode_mk, nama_mk, sks, semester, id_jurusan)
-                  VALUES (:kode_mk, :nama_mk, :sks, :semester, :id_jurusan)";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":kode_mk", $data['kode_mk']);
-        $stmt->bindParam(":nama_mk", $data['nama_mk']);
-        $stmt->bindParam(":sks", $data['sks']);
-        $stmt->bindParam(":semester", $data['semester']);
-        $stmt->bindParam(":id_jurusan", $data['id_jurusan']);
-        return $stmt->execute();
+        try {
+            $this->conn->beginTransaction();
+
+            $query = "INSERT INTO " . $this->table_name . "
+                      (kode_mk, nama_mk, sks, semester, id_jurusan)
+                      VALUES (:kode_mk, :nama_mk, :sks, :semester, :id_jurusan)";
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(":kode_mk", $data['kode_mk']);
+            $stmt->bindParam(":nama_mk", $data['nama_mk']);
+            $stmt->bindParam(":sks", $data['sks']);
+            $stmt->bindParam(":semester", $data['semester']);
+            $stmt->bindParam(":id_jurusan", $data['id_jurusan']);
+
+            $stmt->execute();
+
+            $this->conn->commit();
+            return true;
+        } catch (PDOException $e) {
+            $this->conn->rollBack();
+            return false;
+        }
     }
 
     public function updateMatakuliah($id, $data)
     {
-        $query = "UPDATE " . $this->table_name . "
-                  SET kode_mk = :kode_mk,
-                      nama_mk = :nama_mk,
-                      sks = :sks,
-                      semester = :semester,
-                      id_jurusan = :id_jurusan
-                  WHERE id_mk = :id";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":id", $id);
-        $stmt->bindParam(":kode_mk", $data['kode_mk']);
-        $stmt->bindParam(":nama_mk", $data['nama_mk']);
-        $stmt->bindParam(":sks", $data['sks']);
-        $stmt->bindParam(":semester", $data['semester']);
-        $stmt->bindParam(":id_jurusan", $data['id_jurusan']);
-        return $stmt->execute();
+        try {
+            $this->conn->beginTransaction();
+
+            $query = "UPDATE " . $this->table_name . "
+                      SET kode_mk = :kode_mk,
+                          nama_mk = :nama_mk,
+                          sks = :sks,
+                          semester = :semester,
+                          id_jurusan = :id_jurusan
+                      WHERE id_mk = :id";
+            
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(":id", $id);
+            $stmt->bindParam(":kode_mk", $data['kode_mk']);
+            $stmt->bindParam(":nama_mk", $data['nama_mk']);
+            $stmt->bindParam(":sks", $data['sks']);
+            $stmt->bindParam(":semester", $data['semester']);
+            $stmt->bindParam(":id_jurusan", $data['id_jurusan']);
+            
+            $stmt->execute();
+
+            $this->conn->commit();
+            return true;
+
+        } catch (PDOException $e) {
+            $this->conn->rollBack();
+            return false;
+        }
     }
 
     public function deleteMatakuliah($id)
     {
-        $query = "DELETE FROM " . $this->table_name . " WHERE id_mk = :id";
         try {
+            $this->conn->beginTransaction();
+
+            $query = "DELETE FROM " . $this->table_name . " WHERE id_mk = :id";
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(":id", $id);
-            return $stmt->execute();
+            $stmt->execute();
+
+            $this->conn->commit();
+            return true;
+
         } catch (PDOException $e) {
+            $this->conn->rollBack();
+
             if ($e->getCode() == '23000') {
                 return 'fk_error';
             } else {
@@ -121,4 +154,3 @@ class MatakuliahModel
         return $stmt;
     }
 }
-

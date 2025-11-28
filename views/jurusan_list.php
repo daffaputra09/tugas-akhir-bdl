@@ -16,6 +16,8 @@ include 'views/header.php';
         <div class="alert alert-error">Jurusan tidak ditemukan!</div>
     <?php elseif ($_GET['message'] == 'delete_error'): ?>
         <div class="alert alert-error">Gagal menghapus data jurusan!</div>
+    <?php elseif ($_GET['message'] == 'not_found'): ?>
+        <div class="alert alert-error">Data yang Anda cari tidak ada di database.</div>
     <?php endif; ?>
 <?php endif; ?>
 

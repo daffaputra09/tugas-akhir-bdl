@@ -1,15 +1,18 @@
 <?php
-class MahasiswaModel {
+class MahasiswaModel
+{
     private $conn;
     private $table_name = "mahasiswa";
 
     // Constructor
-    public function __construct($db) {
+    public function __construct($db)
+    {
         $this->conn = $db;
     }
 
     // METHOD 1: Read semua mahasiswa dengan join ke tabel jurusan dan kelas
-    public function getAllMahasiswa() {
+    public function getAllMahasiswa()
+    {
         $query = "SELECT 
                     m.id_mahasiswa,
                     m.nim,
@@ -34,100 +37,134 @@ class MahasiswaModel {
     }
 
     // METHOD 2: Create mahasiswa baru
-    public function createMahasiswa($data) {
-        $query = "INSERT INTO " . $this->table_name . " 
-            (nim, nama_mahasiswa, id_jurusan, tahun_masuk, email, jenis_kelamin, no_hp, semester, id_kelas, foto)
-            VALUES (:nim, :nama_mahasiswa, :id_jurusan, :tahun_masuk, :email, :jenis_kelamin, :no_hp, :semester, :id_kelas, :foto)";
-        
-        $stmt = $this->conn->prepare($query);
+    public function createMahasiswa($data)
+    {
+        try {
+            $this->conn->beginTransaction();
 
-        // Bind parameters untuk keamanan (mencegah SQL injection)
-        $stmt->bindParam(":nim", $data['nim']);
-        $stmt->bindParam(":nama_mahasiswa", $data['nama_mahasiswa']);
-        $stmt->bindParam(":id_jurusan", $data['id_jurusan']);
-        $stmt->bindParam(":tahun_masuk", $data['tahun_masuk']);
-        $stmt->bindParam(":email", $data['email']);
-        $stmt->bindParam(":jenis_kelamin", $data['jenis_kelamin']);
-        $stmt->bindParam(":no_hp", $data['no_hp']);
-        $stmt->bindParam(":semester", $data['semester']);
-        $stmt->bindParam(":id_kelas", $data['id_kelas']);
-        $stmt->bindParam(":foto", $data['foto']);
+            $query = "INSERT INTO " . $this->table_name . " 
+                (nim, nama_mahasiswa, id_jurusan, tahun_masuk, email, jenis_kelamin, no_hp, semester, id_kelas, foto)
+                VALUES (:nim, :nama_mahasiswa, :id_jurusan, :tahun_masuk, :email, :jenis_kelamin, :no_hp, :semester, :id_kelas, :foto)";
 
-        return $stmt->execute();
+            $stmt = $this->conn->prepare($query);
+
+            $stmt->bindParam(":nim", $data['nim']);
+            $stmt->bindParam(":nama_mahasiswa", $data['nama_mahasiswa']);
+            $stmt->bindParam(":id_jurusan", $data['id_jurusan']);
+            $stmt->bindParam(":tahun_masuk", $data['tahun_masuk']);
+            $stmt->bindParam(":email", $data['email']);
+            $stmt->bindParam(":jenis_kelamin", $data['jenis_kelamin']);
+            $stmt->bindParam(":no_hp", $data['no_hp']);
+            $stmt->bindParam(":semester", $data['semester']);
+            $stmt->bindParam(":id_kelas", $data['id_kelas']);
+            $stmt->bindParam(":foto", $data['foto']);
+
+            $stmt->execute();
+
+            $this->conn->commit();
+            return true;
+        } catch (PDOException $e) {
+            $this->conn->rollBack();
+            return false;
+        }
     }
 
     // METHOD 3: Update mahasiswa
-    public function updateMahasiswa($id, $data) {
-        // Jika foto tidak diupdate, jangan update kolom foto
-        if (isset($data['foto']) && !empty($data['foto'])) {
-            $query = "UPDATE " . $this->table_name . "
-                SET nim = :nim, 
-                    nama_mahasiswa = :nama_mahasiswa,
-                    id_jurusan = :id_jurusan,
-                    tahun_masuk = :tahun_masuk,
-                    email = :email, 
-                    jenis_kelamin = :jenis_kelamin,
-                    no_hp = :no_hp, 
-                    semester = :semester,
-                    id_kelas = :id_kelas,
-                    foto = :foto
-                WHERE id_mahasiswa = :id";
-        } else {
-            $query = "UPDATE " . $this->table_name . "
-                SET nim = :nim, 
-                    nama_mahasiswa = :nama_mahasiswa,
-                    id_jurusan = :id_jurusan,
-                    tahun_masuk = :tahun_masuk,
-                    email = :email, 
-                    jenis_kelamin = :jenis_kelamin,
-                    no_hp = :no_hp, 
-                    semester = :semester,
-                    id_kelas = :id_kelas
-                WHERE id_mahasiswa = :id";
+    public function updateMahasiswa($id, $data)
+    {
+        try {
+            $this->conn->beginTransaction();
+
+            // Cek apakah ada update foto atau tidak
+            if (isset($data['foto']) && !empty($data['foto'])) {
+                $query = "UPDATE " . $this->table_name . "
+                    SET nim = :nim, 
+                        nama_mahasiswa = :nama_mahasiswa,
+                        id_jurusan = :id_jurusan,
+                        tahun_masuk = :tahun_masuk,
+                        email = :email, 
+                        jenis_kelamin = :jenis_kelamin,
+                        no_hp = :no_hp, 
+                        semester = :semester,
+                        id_kelas = :id_kelas,
+                        foto = :foto
+                    WHERE id_mahasiswa = :id";
+            } else {
+                $query = "UPDATE " . $this->table_name . "
+                    SET nim = :nim, 
+                        nama_mahasiswa = :nama_mahasiswa,
+                        id_jurusan = :id_jurusan,
+                        tahun_masuk = :tahun_masuk,
+                        email = :email, 
+                        jenis_kelamin = :jenis_kelamin,
+                        no_hp = :no_hp, 
+                        semester = :semester,
+                        id_kelas = :id_kelas
+                    WHERE id_mahasiswa = :id";
+            }
+
+            $stmt = $this->conn->prepare($query);
+
+            $stmt->bindParam(":id", $id);
+            $stmt->bindParam(":nim", $data['nim']);
+            $stmt->bindParam(":nama_mahasiswa", $data['nama_mahasiswa']);
+            $stmt->bindParam(":id_jurusan", $data['id_jurusan']);
+            $stmt->bindParam(":tahun_masuk", $data['tahun_masuk']);
+            $stmt->bindParam(":email", $data['email']);
+            $stmt->bindParam(":jenis_kelamin", $data['jenis_kelamin']);
+            $stmt->bindParam(":no_hp", $data['no_hp']);
+            $stmt->bindParam(":semester", $data['semester']);
+            $stmt->bindParam(":id_kelas", $data['id_kelas']);
+
+            if (isset($data['foto']) && !empty($data['foto'])) {
+                $stmt->bindParam(":foto", $data['foto']);
+            }
+
+            $stmt->execute();
+
+            $this->conn->commit();
+            return true;
+        } catch (PDOException $e) {
+            $this->conn->rollBack();
+            return false;
         }
-
-        $stmt = $this->conn->prepare($query);
-
-        $stmt->bindParam(":id", $id);
-        $stmt->bindParam(":nim", $data['nim']);
-        $stmt->bindParam(":nama_mahasiswa", $data['nama_mahasiswa']);
-        $stmt->bindParam(":id_jurusan", $data['id_jurusan']);
-        $stmt->bindParam(":tahun_masuk", $data['tahun_masuk']);
-        $stmt->bindParam(":email", $data['email']);
-        $stmt->bindParam(":jenis_kelamin", $data['jenis_kelamin']);
-        $stmt->bindParam(":no_hp", $data['no_hp']);
-        $stmt->bindParam(":semester", $data['semester']);
-        $stmt->bindParam(":id_kelas", $data['id_kelas']);
-        
-        if (isset($data['foto']) && !empty($data['foto'])) {
-            $stmt->bindParam(":foto", $data['foto']);
-        }
-
-        return $stmt->execute();
     }
 
     // METHOD 4: Delete mahasiswa
     public function deleteMahasiswa($id) {
-        // Ambil path foto sebelum delete
-        $mahasiswa = $this->getMahasiswaById($id);
-        $foto_path = $mahasiswa['foto'] ?? null;
+        try {
+            $this->conn->beginTransaction();
+
+            $mahasiswa = $this->getMahasiswaById($id);
+            $foto_path = $mahasiswa['foto'] ?? null;
         
-        $query = "DELETE FROM " . $this->table_name . " WHERE id_mahasiswa = :id";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":id", $id);
-        
-        if ($stmt->execute()) {
-            // Hapus file foto jika ada
+            $query = "DELETE FROM " . $this->table_name . " WHERE id_mahasiswa = :id";
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(":id", $id);
+            $stmt->execute();
+
+            $this->conn->commit();
+
             if ($foto_path && file_exists($foto_path)) {
                 unlink($foto_path);
             }
+            
             return true;
+
+        } catch (PDOException $e) {
+            $this->conn->rollBack();
+            
+            if ($e->getCode() == '23000') {
+                return 'fk_error';
+            } else {
+                return false;
+            }
         }
-        return false;
     }
 
     // METHOD 5: Get single mahasiswa by ID
-    public function getMahasiswaById($id) {
+    public function getMahasiswaById($id)
+    {
         $query = "SELECT * FROM " . $this->table_name . " WHERE id_mahasiswa = :id";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(":id", $id);
@@ -136,7 +173,8 @@ class MahasiswaModel {
     }
 
     // METHOD 6: Get all jurusan untuk dropdown
-    public function getAllJurusan() {
+    public function getAllJurusan()
+    {
         $query = "SELECT id_jurusan, nama_jurusan FROM jurusan ORDER BY nama_jurusan";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
@@ -144,7 +182,8 @@ class MahasiswaModel {
     }
 
     // METHOD 7: Get all kelas untuk dropdown
-    public function getAllKelas() {
+    public function getAllKelas()
+    {
         $query = "SELECT k.id_kelas, k.nama_kelas, j.nama_jurusan 
                   FROM kelas k
                   LEFT JOIN jurusan j ON k.id_jurusan = j.id_jurusan
@@ -155,7 +194,8 @@ class MahasiswaModel {
     }
 
     // METHOD 8: Get dashboard statistics
-    public function getDashboardStats() {
+    public function getDashboardStats()
+    {
         $query = "SELECT 
                     *
                   FROM vw_dashboard";
@@ -165,7 +205,8 @@ class MahasiswaModel {
     }
 
     // METHOD 9: Get mahasiswa per jurusan
-    public function getMahasiswaPerJurusan() {
+    public function getMahasiswaPerJurusan()
+    {
         $query = "SELECT 
                     j.nama_jurusan,
                     COUNT(m.id_mahasiswa) as total_mahasiswa
@@ -179,7 +220,8 @@ class MahasiswaModel {
     }
 
     // METHOD 10: Get mahasiswa per angkatan
-    public function getMahasiswaPerAngkatan() {
+    public function getMahasiswaPerAngkatan()
+    {
         $query = "SELECT 
                     tahun_masuk,
                     COUNT(*) as total_mahasiswa
@@ -192,7 +234,8 @@ class MahasiswaModel {
     }
 
     // METHOD 11: Get mahasiswa per semester
-    public function getMahasiswaPerSemester() {
+    public function getMahasiswaPerSemester()
+    {
         $query = "SELECT 
                     semester,
                     COUNT(*) as total_mahasiswa
@@ -205,7 +248,8 @@ class MahasiswaModel {
     }
 
     // METHOD 12: Search mahasiswa
-    public function searchMahasiswa($keyword) {
+    public function searchMahasiswa($keyword)
+    {
         $query = "SELECT 
                     m.id_mahasiswa,
                     m.nim,
@@ -233,7 +277,8 @@ class MahasiswaModel {
     }
 
     // METHOD 13: Detail mahasiswa by NIM
-    public function getMahasiswaByNIM($nim) {
+    public function getMahasiswaByNIM($nim)
+    {
         $query = "SELECT 
                     *
                   FROM vw_detail_mahasiswa m
@@ -243,8 +288,4 @@ class MahasiswaModel {
         $stmt->execute();
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
-
-
 }
-?>
-

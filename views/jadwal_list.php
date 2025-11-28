@@ -20,6 +20,8 @@ include 'views/header.php';
         <div class="alert alert-error">Gagal menghapus data jurusan!</div>
     <?php elseif ($_GET['message'] == 'updated'): ?>
         <div class="alert alert-success">Data jadwal berhasil diupdate!</div>
+    <?php elseif ($_GET['message'] == 'not_found'): ?>
+        <div class="alert alert-error">Data yang Anda cari tidak ada di database.</div>
     <?php endif; ?>
 <?php endif; ?>
 

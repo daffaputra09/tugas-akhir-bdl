@@ -96,7 +96,6 @@ class JadwalController
             ];
 
             if ($this->model->updateJadwal($id, $data)) {
-                $this->model->refreshView();
                 header("Location: index.php?action=jadwal_list&message=updated");
                 exit;
             } else {
@@ -105,7 +104,7 @@ class JadwalController
         }
 
         $jadwal = $this->model->getJadwalById($id);
-        
+
         $dosenList = $this->model->getDosenList();
         $mkList = $this->model->getMatkulList();
         $kelasList = $this->model->getKelasList();
@@ -124,9 +123,6 @@ class JadwalController
             $id = $_GET['id'];
 
             if ($this->model->deleteJadwal($id)) {
-                
-                $this->model->refreshView();
-
                 header("Location: index.php?action=jadwal_list&message=deleted");
             } else {
                 header("Location: index.php?action=jadwal_list&message=delete_error");

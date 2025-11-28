@@ -21,6 +21,8 @@ include 'views/header.php';
         <div class="alert alert-error">
             Gagal menghapus data mahasiswa!
         </div>
+    <?php elseif ($_GET['message'] == 'not_found'): ?>
+        <div class="alert alert-error">Data yang Anda cari tidak ada di database.</div>
     <?php endif; ?>
 <?php endif; ?>
 
@@ -34,9 +36,9 @@ include 'views/header.php';
     <div class="search-box">
         <form method="GET" action="index.php">
             <input type="hidden" name="action" value="search">
-            <input type="text" name="keyword" class="search-input" 
-                   placeholder="Cari berdasarkan NIM, Nama, atau Email..." 
-                   value="<?php echo isset($_GET['keyword']) ? htmlspecialchars($_GET['keyword']) : ''; ?>">
+            <input type="text" name="keyword" class="search-input"
+                placeholder="Cari berdasarkan NIM, Nama, atau Email..."
+                value="<?php echo isset($_GET['keyword']) ? htmlspecialchars($_GET['keyword']) : ''; ?>">
         </form>
     </div>
 
@@ -60,17 +62,17 @@ include 'views/header.php';
                     </tr>
                 </thead>
                 <tbody>
-                    <?php 
+                    <?php
                     $no = 1;
-                    while ($row = $mahasiswa->fetch(PDO::FETCH_ASSOC)): 
+                    while ($row = $mahasiswa->fetch(PDO::FETCH_ASSOC)):
                     ?>
                         <tr>
                             <td><?php echo $no++; ?></td>
                             <td>
                                 <?php if (!empty($row['foto']) && file_exists($row['foto'])): ?>
-                                    <img src="<?php echo htmlspecialchars($row['foto']); ?>" 
-                                         alt="Foto <?php echo htmlspecialchars($row['nama_mahasiswa']); ?>" 
-                                         style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px; border: 1px solid #ddd;">
+                                    <img src="<?php echo htmlspecialchars($row['foto']); ?>"
+                                        alt="Foto <?php echo htmlspecialchars($row['nama_mahasiswa']); ?>"
+                                        style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px; border: 1px solid #ddd;">
                                 <?php else: ?>
                                     <div style="width: 50px; height: 50px; background-color: #f0f0f0; border-radius: 5px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 12px;">
                                         No Photo
@@ -94,13 +96,13 @@ include 'views/header.php';
                             <td><?php echo htmlspecialchars($row['no_hp'] ?? '-'); ?></td>
                             <td>
                                 <div class="btn-group">
-                                    <a href="index.php?action=edit&id=<?php echo $row['id_mahasiswa']; ?>" 
-                                       class="btn btn-edit">Edit</a>
-                                    <a href="index.php?action=delete&id=<?php echo $row['id_mahasiswa']; ?>" 
-                                       class="btn btn-delete"
-                                       onclick="return confirm('Apakah Anda yakin ingin menghapus mahasiswa ini?')">Hapus</a>
-                                    <a href="index.php?action=detail&nim=<?php echo $row['nim']; ?>" 
-                                       class="btn btn-view">Detail</a>
+                                    <a href="index.php?action=edit&id=<?php echo $row['id_mahasiswa']; ?>"
+                                        class="btn btn-edit">Edit</a>
+                                    <a href="index.php?action=delete&id=<?php echo $row['id_mahasiswa']; ?>"
+                                        class="btn btn-delete"
+                                        onclick="return confirm('Apakah Anda yakin ingin menghapus mahasiswa ini?')">Hapus</a>
+                                    <a href="index.php?action=detail&nim=<?php echo $row['nim']; ?>"
+                                        class="btn btn-view">Detail</a>
                                 </div>
                             </td>
                         </tr>

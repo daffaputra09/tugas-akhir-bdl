@@ -14,6 +14,8 @@ include 'views/header.php';
         <div class="alert alert-error">Gagal menghapus data matakuliah!</div>
     <?php elseif ($_GET['message'] == 'fk_error'): ?>
         <div class="alert alert-error">Tidak dapat menghapus matakuliah karena masih digunakan di data lain!</div>
+    <?php elseif ($_GET['message'] == 'not_found'): ?>
+        <div class="alert alert-error">Data yang Anda cari tidak ada di database.</div>
     <?php endif; ?>
 <?php endif; ?>
 
@@ -77,4 +79,3 @@ include 'views/header.php';
 </div>
 
 <?php include 'views/footer.php'; ?>
-

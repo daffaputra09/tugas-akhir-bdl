@@ -26,14 +26,14 @@ class NilaiController
                 'id_mk' => $_POST['id_mk'],
                 'nilai_angka' => $_POST['nilai_angka'],
                 'tipe_nilai' => $_POST['tipe_nilai'],
-                'tanggal_input' => $_POST['tanggal_input'] ?? date('Y-m-d'),
+                'tanggal_input' => !empty($_POST['tanggal_input']) ? $_POST['tanggal_input'] : date('Y-m-d'),
             ];
 
             if ($this->model->createNilai($data)) {
                 header("Location: index.php?action=nilai_list&message=created");
                 exit();
             } else {
-                $error = "Gagal menambah nilai";
+                $error = "Gagal menambah nilai. Silakan coba lagi.";
             }
         }
 
@@ -45,6 +45,7 @@ class NilaiController
     public function edit(): void
     {
         $id = $_GET['id'] ?? null;
+
         if (!$id) {
             header("Location: index.php?action=nilai_list");
             exit();
@@ -56,21 +57,21 @@ class NilaiController
                 'id_mk' => $_POST['id_mk'],
                 'nilai_angka' => $_POST['nilai_angka'],
                 'tipe_nilai' => $_POST['tipe_nilai'],
-                'tanggal_input' => $_POST['tanggal_input'],
+                'tanggal_input' => !empty($_POST['tanggal_input']) ? $_POST['tanggal_input'] : date('Y-m-d'),
             ];
 
             if ($this->model->updateNilai($id, $data)) {
                 header("Location: index.php?action=nilai_list&message=updated");
                 exit();
             } else {
-                $error = "Gagal mengupdate nilai";
+                $error = "Gagal mengupdate nilai. Silakan coba lagi.";
             }
         }
 
         $nilai = $this->model->getNilaiById($id);
-        
+
         if (!$nilai) {
-            header("Location: index.php?action=nilai_list&message=search_error");
+            header("Location: index.php?action=nilai_list&message=not_found");
             exit();
         }
 
@@ -120,4 +121,3 @@ class NilaiController
         exit();
     }
 }
-?>

@@ -59,8 +59,13 @@ class JurusanController
     public function delete(): void
     {
         $id = $_GET['id'];
-        if ($this->model->deleteJurusan($id)) {
+        
+        $result = $this->model->deleteJurusan($id);
+
+        if ($result === true) {
             header("Location: index.php?action=jurusan_list&message=deleted");
+        } elseif ($result === 'fk_error') {
+            header("Location: index.php?action=jurusan_list&message=delete_fk_error");
         } else {
             header("Location: index.php?action=jurusan_list&message=delete_error");
         }

@@ -18,6 +18,8 @@ include 'views/header.php';
         <div class="alert alert-error">Gagal refresh data nilai!</div>
     <?php elseif ($_GET['message'] == 'search_error'): ?>
         <div class="alert alert-error">Data nilai tidak ditemukan!</div>
+    <?php elseif ($_GET['message'] == 'not_found'): ?>
+        <div class="alert alert-error">Data yang Anda cari tidak ada di database.</div>
     <?php endif; ?>
 <?php endif; ?>
 
@@ -119,12 +121,9 @@ include 'views/header.php';
                                 <strong><?php echo htmlspecialchars($row['nilai_angka']); ?></strong>
                             </td>
                             <td>
-                                <span class="badge" style="background-color: <?php 
-                                    echo $row['nilai_huruf'] == 'A' ? '#10b981' : 
-                                        ($row['nilai_huruf'] == 'B' ? '#3b82f6' : 
-                                        ($row['nilai_huruf'] == 'C' ? '#f59e0b' : 
-                                        ($row['nilai_huruf'] == 'D' ? '#ef4444' : '#dc2626'))); 
-                                    ?>; color: white; padding: 4px 8px; border-radius: 3px;">
+                                <span class="badge" style="background-color: <?php
+                                                                                echo $row['nilai_huruf'] == 'A' ? '#10b981' : ($row['nilai_huruf'] == 'B' ? '#3b82f6' : ($row['nilai_huruf'] == 'C' ? '#f59e0b' : ($row['nilai_huruf'] == 'D' ? '#ef4444' : '#dc2626')));
+                                                                                ?>; color: white; padding: 4px 8px; border-radius: 3px;">
                                     <?php echo htmlspecialchars($row['nilai_huruf']); ?>
                                 </span>
                             </td>

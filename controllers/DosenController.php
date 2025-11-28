@@ -55,11 +55,17 @@ class DosenController
                 header("Location: index.php?action=dosen_list&message=updated");
                 exit();
             } else {
-                $error = "Gagal mengupdate dosen";
+                $error = "Gagal mengupdate dosen. Silakan coba lagi.";
             }
         }
 
         $dosen = $this->model->getDosenById($id);
+
+        if (!$dosen) {
+            header("Location: index.php?action=dosen_list&message=not_found");
+            exit();
+        }
+
         $jurusan_list = $this->model->getAllJurusan();
         include 'views/dosen_form.php';
     }
@@ -67,8 +73,13 @@ class DosenController
     public function delete(): void
     {
         $id = $_GET['id'];
-        if ($this->model->deleteDosen($id)) {
+
+        $result = $this->model->deleteDosen($id);
+
+        if ($result === true) {
             header("Location: index.php?action=dosen_list&message=deleted");
+        } elseif ($result === 'fk_error') {
+            header("Location: index.php?action=dosen_list&message=delete_fk_error");
         } else {
             header("Location: index.php?action=dosen_list&message=delete_error");
         }
@@ -85,5 +96,3 @@ class DosenController
         include 'views/dosen_list.php';
     }
 }
-?>
-

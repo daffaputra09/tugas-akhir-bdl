@@ -104,71 +104,94 @@ class NilaiModel
 
     public function createNilai($data)
     {
-        // Auto convert nilai_angka ke nilai_huruf
         $nilai_huruf = $this->convertNilaiHuruf($data['nilai_angka']);
-        
-        $query = "INSERT INTO " . $this->table_name . "
-                  (id_mahasiswa, id_mk, nilai_angka, nilai_huruf, tipe_nilai, tanggal_input)
-                  VALUES (:id_mahasiswa, :id_mk, :nilai_angka, :nilai_huruf, :tipe_nilai, :tanggal_input)";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":id_mahasiswa", $data['id_mahasiswa']);
-        $stmt->bindParam(":id_mk", $data['id_mk']);
-        $stmt->bindParam(":nilai_angka", $data['nilai_angka']);
-        $stmt->bindParam(":nilai_huruf", $nilai_huruf);
-        $stmt->bindParam(":tipe_nilai", $data['tipe_nilai']);
-        $stmt->bindParam(":tanggal_input", $data['tanggal_input']);
-        
-        if ($stmt->execute()) {
-            // Refresh view setelah insert
+
+        try {
+            $this->conn->beginTransaction();
+
+            $query = "INSERT INTO " . $this->table_name . "
+                      (id_mahasiswa, id_mk, nilai_angka, nilai_huruf, tipe_nilai, tanggal_input)
+                      VALUES (:id_mahasiswa, :id_mk, :nilai_angka, :nilai_huruf, :tipe_nilai, :tanggal_input)";
+
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(":id_mahasiswa", $data['id_mahasiswa']);
+            $stmt->bindParam(":id_mk", $data['id_mk']);
+            $stmt->bindParam(":nilai_angka", $data['nilai_angka']);
+            $stmt->bindParam(":nilai_huruf", $nilai_huruf);
+            $stmt->bindParam(":tipe_nilai", $data['tipe_nilai']);
+            $stmt->bindParam(":tanggal_input", $data['tanggal_input']);
+
+            $stmt->execute();
+
+            $this->conn->commit();
+
             $this->refreshView();
+
             return true;
+        } catch (PDOException $e) {
+            $this->conn->rollBack();
+            return false;
         }
-        return false;
     }
 
     public function updateNilai($id, $data)
     {
-        // Auto convert nilai_angka ke nilai_huruf
         $nilai_huruf = $this->convertNilaiHuruf($data['nilai_angka']);
         
-        $query = "UPDATE " . $this->table_name . "
-                  SET id_mahasiswa = :id_mahasiswa,
-                      id_mk = :id_mk,
-                      nilai_angka = :nilai_angka,
-                      nilai_huruf = :nilai_huruf,
-                      tipe_nilai = :tipe_nilai,
-                      tanggal_input = :tanggal_input
-                  WHERE id_nilai = :id";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(":id", $id);
-        $stmt->bindParam(":id_mahasiswa", $data['id_mahasiswa']);
-        $stmt->bindParam(":id_mk", $data['id_mk']);
-        $stmt->bindParam(":nilai_angka", $data['nilai_angka']);
-        $stmt->bindParam(":nilai_huruf", $nilai_huruf);
-        $stmt->bindParam(":tipe_nilai", $data['tipe_nilai']);
-        $stmt->bindParam(":tanggal_input", $data['tanggal_input']);
-        
-        if ($stmt->execute()) {
-            // Refresh view setelah update
+        try {
+            $this->conn->beginTransaction();
+
+            $query = "UPDATE " . $this->table_name . "
+                      SET id_mahasiswa = :id_mahasiswa,
+                          id_mk = :id_mk,
+                          nilai_angka = :nilai_angka,
+                          nilai_huruf = :nilai_huruf,
+                          tipe_nilai = :tipe_nilai,
+                          tanggal_input = :tanggal_input
+                      WHERE id_nilai = :id";
+            
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(":id", $id);
+            $stmt->bindParam(":id_mahasiswa", $data['id_mahasiswa']);
+            $stmt->bindParam(":id_mk", $data['id_mk']);
+            $stmt->bindParam(":nilai_angka", $data['nilai_angka']);
+            $stmt->bindParam(":nilai_huruf", $nilai_huruf);
+            $stmt->bindParam(":tipe_nilai", $data['tipe_nilai']);
+            $stmt->bindParam(":tanggal_input", $data['tanggal_input']);
+            
+            $stmt->execute();
+
+            $this->conn->commit();
+            
             $this->refreshView();
+
             return true;
+
+        } catch (PDOException $e) {
+            $this->conn->rollBack();
+            return false;
         }
-        return false;
     }
 
     public function deleteNilai($id)
     {
-        $query = "DELETE FROM " . $this->table_name . " WHERE id_nilai = :id";
         try {
+            $this->conn->beginTransaction();
+
+            $query = "DELETE FROM " . $this->table_name . " WHERE id_nilai = :id";
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(":id", $id);
-            if ($stmt->execute()) {
-                // Refresh view setelah delete
-                $this->refreshView();
-                return true;
-            }
-            return false;
+            
+            $stmt->execute();
+
+            $this->conn->commit();
+            
+            $this->refreshView();
+
+            return true;
+
         } catch (PDOException $e) {
+            $this->conn->rollBack();
             return false;
         }
     }

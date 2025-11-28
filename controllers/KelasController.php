@@ -55,6 +55,12 @@ class KelasController
         }
 
         $kelas = $this->kelasModel->getKelasById($id);
+
+        if (!$kelas) {
+            header("Location: index.php?action=kelas_list&message=not_found");
+            exit();
+        }
+
         $jurusan_list = $this->jurusanModel->getAllJurusan();
         include 'views/kelas_form.php';
     }

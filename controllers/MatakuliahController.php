@@ -29,7 +29,7 @@ class MatakuliahController
                 header("Location: index.php?action=matakuliah_list&message=created");
                 exit();
             } else {
-                $error = "Gagal menambah matakuliah";
+                $error = "Gagal menambah matakuliah. Silakan coba lagi.";
             }
         }
         $jurusan_list = $this->model->getAllJurusan();
@@ -58,20 +58,32 @@ class MatakuliahController
         }
 
         $matakuliah = $this->model->getMatakuliahById($id);
+
+        if (!$matakuliah) {
+            header("Location: index.php?action=matakuliah_list&message=not_found");
+            exit();
+        }
+
         $jurusan_list = $this->model->getAllJurusan();
         include 'views/matakuliah_form.php';
     }
 
     public function delete(): void
     {
-        $id = $_GET['id'];
-        $result = $this->model->deleteMatakuliah($id);
-        if ($result === true) {
-            header("Location: index.php?action=matakuliah_list&message=deleted");
-        } elseif ($result === 'fk_error') {
-            header("Location: index.php?action=matakuliah_list&message=fk_error");
+        if (isset($_GET['id'])) {
+            $id = $_GET['id'];
+
+            $result = $this->model->deleteMatakuliah($id);
+
+            if ($result === true) {
+                header("Location: index.php?action=matakuliah_list&message=deleted");
+            } elseif ($result === 'fk_error') {
+                header("Location: index.php?action=matakuliah_list&message=delete_fk_error");
+            } else {
+                header("Location: index.php?action=matakuliah_list&message=delete_error");
+            }
         } else {
-            header("Location: index.php?action=matakuliah_list&message=delete_error");
+            header("Location: index.php?action=matakuliah_list");
         }
         exit();
     }
@@ -86,5 +98,3 @@ class MatakuliahController
         include 'views/matakuliah_list.php';
     }
 }
-?>
-

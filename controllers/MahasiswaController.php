@@ -37,21 +37,29 @@ class MahasiswaController
                 'foto' => null
             ];
 
-            // Handle file upload
+            $uploaded_file_path = null;
+
             if (isset($_FILES['foto']) && $_FILES['foto']['error'] == 0) {
                 $upload_result = $this->handleFileUpload($_FILES['foto'], $_POST['nim']);
                 if ($upload_result['success']) {
-                    $data['foto'] = $upload_result['path'];
+                    $uploaded_file_path = $upload_result['path'];
+                    $data['foto'] = $uploaded_file_path;
                 } else {
                     $error = $upload_result['error'];
                 }
             }
 
-            if (!isset($error) && $this->model->createMahasiswa($data)) {
-                header("Location: index.php?action=list&message=created");
-                exit();
-            } else {
-                $error = $error ?? "Gagal menambah mahasiswa";
+            if (!isset($error)) {
+                if ($this->model->createMahasiswa($data)) {
+                    // Sukses: Redirect
+                    header("Location: index.php?action=mahasiswa_list&message=created");
+                    exit();
+                } else {
+                    if ($uploaded_file_path && file_exists($uploaded_file_path)) {
+                        unlink($uploaded_file_path);
+                    }
+                    $error = "Gagal menambah data mahasiswa.";
+                }
             }
         }
         $jurusan_list = $this->model->getAllJurusan();
@@ -62,6 +70,13 @@ class MahasiswaController
     public function edit(): void
     {
         $id = $_GET['id'];
+
+        $mahasiswa_lama = $this->model->getMahasiswaById($id);
+
+        if (!$mahasiswa_lama) {
+            header("Location: index.php?action=mahasiswa_list&message=not_found");
+            exit();
+        }
 
         if ($_POST) {
             $data = [
@@ -76,21 +91,32 @@ class MahasiswaController
                 'id_kelas' => !empty($_POST['id_kelas']) ? $_POST['id_kelas'] : null
             ];
 
-            // Handle file upload jika ada file baru
+            $uploaded_file_path = null;
+
             if (isset($_FILES['foto']) && $_FILES['foto']['error'] == 0) {
-                $upload_result = $this->handleFileUpload($_FILES['foto'], $_POST['nim'], $id);
+                $upload_result = $this->handleFileUpload($_FILES['foto'], $_POST['nim']);
                 if ($upload_result['success']) {
-                    $data['foto'] = $upload_result['path'];
+                    $uploaded_file_path = $upload_result['path'];
+                    $data['foto'] = $uploaded_file_path;
                 } else {
                     $error = $upload_result['error'];
                 }
             }
 
-            if (!isset($error) && $this->model->updateMahasiswa($id, $data)) {
-                header("Location: index.php?action=list&message=updated");
-                exit();
-            } else {
-                $error = $error ?? "Gagal mengupdate mahasiswa";
+            if (!isset($error)) {
+                if ($this->model->updateMahasiswa($id, $data)) {
+                    if ($uploaded_file_path && !empty($mahasiswa_lama['foto']) && file_exists($mahasiswa_lama['foto'])) {
+                        unlink($mahasiswa_lama['foto']);
+                    }
+
+                    header("Location: index.php?action=mahasiswa_list&message=updated");
+                    exit();
+                } else {
+                    if ($uploaded_file_path && file_exists($uploaded_file_path)) {
+                        unlink($uploaded_file_path);
+                    }
+                    $error = "Gagal mengupdate mahasiswa.";
+                }
             }
         }
 
@@ -102,11 +128,20 @@ class MahasiswaController
 
     public function delete(): void
     {
-        $id = $_GET['id'];
-        if ($this->model->deleteMahasiswa($id)) {
-            header("Location: index.php?action=list&message=deleted");
+        if (isset($_GET['id'])) {
+            $id = $_GET['id'];
+
+            $result = $this->model->deleteMahasiswa($id);
+
+            if ($result === true) {
+                header("Location: index.php?action=mahasiswa_list&message=deleted");
+            } elseif ($result === 'fk_error') {
+                header("Location: index.php?action=mahasiswa_list&message=delete_fk_error");
+            } else {
+                header("Location: index.php?action=mahasiswa_list&message=delete_error");
+            }
         } else {
-            header("Location: index.php?action=list&message=delete_error");
+            header("Location: index.php?action=mahasiswa_list");
         }
         exit();
     }
@@ -121,13 +156,15 @@ class MahasiswaController
         include 'views/mahasiswa_list.php';
     }
 
-    public function detail(){
+    public function detail()
+    {
         $nim = $_GET['nim'];
         $mahasiswa = $this->model->getMahasiswaByNIM($nim);
         include 'views/mahasiswa_detail.php';
     }
 
-    public function getDashboardStats(){
+    public function getDashboardStats()
+    {
         $stats = $this->model->getDashboardStats();
         return $stats;
     }
@@ -165,4 +202,3 @@ class MahasiswaController
         }
     }
 }
-?>

@@ -179,6 +179,9 @@ switch ($action) {
     case 'nilai_refresh':
         $nilaiController->refresh();
         break;
+    case 'nilai_get_matakuliah':
+        $nilaiController->getMatakuliahByMahasiswa();
+        break;
 
     default:
         $controller->list();

@@ -317,6 +317,30 @@ class NilaiModel
         }
     }
 
+    public function getMatakuliahByMahasiswa($id_mahasiswa)
+    {
+        try {
+            $query = "SELECT DISTINCT 
+                        m.id_mk, 
+                        m.kode_mk, 
+                        m.nama_mk, 
+                        m.sks
+                      FROM matakuliah m
+                      INNER JOIN jadwal_kuliah jk ON m.id_mk = jk.id_mk
+                      INNER JOIN mahasiswa mhs ON jk.id_kelas = mhs.id_kelas
+                      WHERE mhs.id_mahasiswa = :id_mahasiswa
+                      ORDER BY m.kode_mk ASC";
+            
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(":id_mahasiswa", $id_mahasiswa, PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error getMatakuliahByMahasiswa: " . $e->getMessage());
+            return array();
+        }
+    }
+
     private function convertNilaiHuruf($nilai_angka)
     {
         try {

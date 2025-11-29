@@ -14,14 +14,27 @@ include 'views/header.php';
     <?php endif; ?>
 
     <form method="POST" action="">
+        <?php if (isset($_GET['load_mk']) && isset($_GET['id_mahasiswa'])): ?>
+            <input type="hidden" name="selected_mahasiswa" value="<?php echo htmlspecialchars($_GET['id_mahasiswa']); ?>">
+        <?php endif; ?>
+        
         <div class="form-grid">
             <div class="form-group">
                 <label for="id_mahasiswa" class="form-label">Mahasiswa *</label>
-                <select id="id_mahasiswa" name="id_mahasiswa" class="form-select" required>
-                    <option value="" disabled selected>-- Pilih Mahasiswa --</option>
+                <select id="id_mahasiswa" name="id_mahasiswa" class="form-select" required 
+                        onchange="window.location.href='index.php?action=nilai_create&load_mk=1&id_mahasiswa=' + this.value">
+                    <option value="" disabled <?php echo (!isset($_GET['id_mahasiswa']) && !isset($nilai)) ? 'selected' : ''; ?>>-- Pilih Mahasiswa --</option>
                     <?php foreach ($mahasiswaList as $mhs): ?>
                         <option value="<?php echo $mhs['id_mahasiswa']; ?>" 
-                            <?php echo (isset($nilai) && $nilai['id_mahasiswa'] == $mhs['id_mahasiswa']) ? 'selected' : ''; ?>>
+                            <?php 
+                            $selected = false;
+                            if (isset($nilai) && $nilai['id_mahasiswa'] == $mhs['id_mahasiswa']) {
+                                $selected = true;
+                            } elseif (isset($_GET['id_mahasiswa']) && $_GET['id_mahasiswa'] == $mhs['id_mahasiswa']) {
+                                $selected = true;
+                            }
+                            echo $selected ? 'selected' : ''; 
+                            ?>>
                             <?php echo htmlspecialchars($mhs['nim'] . ' - ' . $mhs['nama_mahasiswa']); ?>
                         </option>
                     <?php endforeach; ?>
@@ -30,15 +43,27 @@ include 'views/header.php';
 
             <div class="form-group">
                 <label for="id_mk" class="form-label">Mata Kuliah *</label>
-                <select id="id_mk" name="id_mk" class="form-select" required>
-                    <option value="" disabled selected>-- Pilih Mata Kuliah --</option>
-                    <?php foreach ($matakuliahList as $mk): ?>
-                        <option value="<?php echo $mk['id_mk']; ?>" 
-                            <?php echo (isset($nilai) && $nilai['id_mk'] == $mk['id_mk']) ? 'selected' : ''; ?>>
-                            <?php echo htmlspecialchars($mk['kode_mk'] . ' - ' . $mk['nama_mk']); ?>
-                        </option>
-                    <?php endforeach; ?>
+                <select id="id_mk" name="id_mk" class="form-select" required 
+                        <?php echo (empty($matakuliahList)) ? 'disabled' : ''; ?>>
+                    <?php if (empty($matakuliahList)): ?>
+                        <option value="" disabled selected>-- Pilih Mahasiswa Terlebih Dahulu --</option>
+                    <?php else: ?>
+                        <option value="" disabled selected>-- Pilih Mata Kuliah --</option>
+                        <?php foreach ($matakuliahList as $mk): ?>
+                            <option value="<?php echo $mk['id_mk']; ?>" 
+                                <?php echo (isset($nilai) && $nilai['id_mk'] == $mk['id_mk']) ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($mk['kode_mk'] . ' - ' . $mk['nama_mk'] . ' (' . $mk['sks'] . ' SKS)'); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </select>
+                <small style="color: #666; font-size: 12px; display: block; margin-top: 5px;">
+                    <?php if (empty($matakuliahList) && isset($_GET['id_mahasiswa'])): ?>
+                        <span style="color: #dc2626;">⚠ Mahasiswa ini belum terdaftar di kelas atau tidak ada jadwal</span>
+                    <?php else: ?>
+                        Hanya matakuliah yang ada di jadwal kelas mahasiswa yang akan ditampilkan
+                    <?php endif; ?>
+                </small>
             </div>
         </div>
 

@@ -76,13 +76,39 @@ class NilaiController
 
         try {
             $mahasiswaList = $this->model->getMahasiswaList();
-            $matakuliahList = $this->model->getMatakuliahList();
+            
+            $matakuliahList = array();
+            if (isset($_GET['id_mahasiswa']) && !empty($_GET['id_mahasiswa'])) {
+                $matakuliahList = $this->model->getMatakuliahByMahasiswa($_GET['id_mahasiswa']);
+            }
+            
             include 'views/nilai_form.php';
         } catch (Exception $e) {
             error_log("Error loading dropdown: " . $e->getMessage());
             $error = "Gagal memuat data referensi";
             include 'views/error.php';
         }
+    }
+
+    public function getMatakuliahByMahasiswa(): void
+    {
+        header('Content-Type: application/json');
+        
+        try {
+            $id_mahasiswa = $_GET['id_mahasiswa'] ?? null;
+            
+            if (!$id_mahasiswa) {
+                echo json_encode(['success' => false, 'message' => 'ID Mahasiswa tidak valid']);
+                exit();
+            }
+            
+            $matakuliah = $this->model->getMatakuliahByMahasiswa($id_mahasiswa);
+            echo json_encode(['success' => true, 'data' => $matakuliah]);
+        } catch (Exception $e) {
+            error_log("Error getMatakuliahByMahasiswa: " . $e->getMessage());
+            echo json_encode(['success' => false, 'message' => 'Gagal mengambil data matakuliah']);
+        }
+        exit();
     }
 
     public function edit(): void
@@ -138,7 +164,7 @@ class NilaiController
             }
 
             $mahasiswaList = $this->model->getMahasiswaList();
-            $matakuliahList = $this->model->getMatakuliahList();
+            $matakuliahList = $this->model->getMatakuliahByMahasiswa($nilai['id_mahasiswa']);
             include 'views/nilai_form.php';
         } catch (Exception $e) {
             error_log("Error loading edit data: " . $e->getMessage());

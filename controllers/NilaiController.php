@@ -11,11 +11,18 @@ class NilaiController
     public function list(): void
     {
         try {
+            $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+            $per_page = 10;
+            $offset = ($page - 1) * $per_page;
+            
             $listTipe = $this->model->getTipeNilaiOptions();
             $listJurusan = $this->model->getJurusanOptions();
             $listSemester = $this->model->getSemesterOptions();
 
-            $nilai = $this->model->getAllNilai();
+            $total_records = $this->model->countSearchNilai('', '', '', '');
+            $total_pages = ceil($total_records / $per_page);
+
+            $nilai = $this->model->searchNilai('', '', '', '', $per_page, $offset);
             if (!$nilai) {
                 throw new Exception("Gagal mengambil data nilai");
             }
@@ -166,6 +173,10 @@ class NilaiController
         $error = null;
         
         try {
+            $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+            $per_page = 10;
+            $offset = ($page - 1) * $per_page;
+            
             $listTipe = $this->model->getTipeNilaiOptions();
             $listJurusan = $this->model->getJurusanOptions();
             $listSemester = $this->model->getSemesterOptions();
@@ -175,7 +186,10 @@ class NilaiController
             $filterJurusan = isset($_GET['filter_jurusan']) ? $_GET['filter_jurusan'] : '';
             $filterSemester = isset($_GET['filter_semester']) ? $_GET['filter_semester'] : '';
 
-            $nilai = $this->model->searchNilai($keyword, $filterTipe, $filterJurusan, $filterSemester);
+            $total_records = $this->model->countSearchNilai($keyword, $filterTipe, $filterJurusan, $filterSemester);
+            $total_pages = ceil($total_records / $per_page);
+
+            $nilai = $this->model->searchNilai($keyword, $filterTipe, $filterJurusan, $filterSemester, $per_page, $offset);
             if (!$nilai) {
                 throw new Exception("Pencarian gagal");
             }

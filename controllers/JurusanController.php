@@ -11,7 +11,14 @@ class JurusanController
     public function list(): void
     {
         try {
-            $jurusan = $this->model->getAllJurusan();
+            $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+            $per_page = 10;
+            $offset = ($page - 1) * $per_page;
+            
+            $total_records = $this->model->countTotalJurusan();
+            $total_pages = ceil($total_records / $per_page);
+            
+            $jurusan = $this->model->getAllJurusan($per_page, $offset);
             if (!$jurusan) {
                 throw new Exception("Gagal mengambil data jurusan");
             }
@@ -143,13 +150,24 @@ class JurusanController
         $error = null;
         
         try {
+            $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+            $per_page = 10;
+            $offset = ($page - 1) * $per_page;
+            
             if (isset($_GET['keyword']) && !empty($_GET['keyword'])) {
-                $jurusan = $this->model->searchJurusan($_GET['keyword']);
+                $keyword = $_GET['keyword'];
+                $total_records = $this->model->countSearchJurusan($keyword);
+                $total_pages = ceil($total_records / $per_page);
+                
+                $jurusan = $this->model->searchJurusan($keyword, $per_page, $offset);
                 if (!$jurusan) {
                     throw new Exception("Pencarian gagal");
                 }
             } else {
-                $jurusan = $this->model->getAllJurusan();
+                $total_records = $this->model->countTotalJurusan();
+                $total_pages = ceil($total_records / $per_page);
+                
+                $jurusan = $this->model->getAllJurusan($per_page, $offset);
                 if (!$jurusan) {
                     throw new Exception("Gagal mengambil data jurusan");
                 }

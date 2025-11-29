@@ -58,7 +58,7 @@ class NilaiModel
         return $this->searchNilai('', '', '', '');
     }
 
-    public function searchNilai($keyword = '', $filterTipe = '', $filterJurusan = '', $filterSemester = '')
+    public function searchNilai($keyword = '', $filterTipe = '', $filterJurusan = '', $filterSemester = '', $limit = null, $offset = null)
     {
         try {
             $query = "SELECT * FROM " . $this->mv_name . " WHERE 1=1 ";
@@ -83,6 +83,66 @@ class NilaiModel
             }
 
             $query .= " ORDER BY tanggal_input DESC, nama_mahasiswa ASC";
+            
+            if ($limit !== null && $offset !== null) {
+                $query .= " LIMIT :limit OFFSET :offset";
+            }
+
+            $stmt = $this->conn->prepare($query);
+
+            if (!empty($keyword)) {
+                $kw = "%{$keyword}%";
+                $stmt->bindParam(":keyword", $kw);
+            }
+
+            if (!empty($filterTipe)) {
+                $stmt->bindParam(":tipe_nilai", $filterTipe);
+            }
+
+            if (!empty($filterJurusan)) {
+                $stmt->bindParam(":id_jurusan", $filterJurusan);
+            }
+
+            if (!empty($filterSemester)) {
+                $stmt->bindParam(":semester", $filterSemester);
+            }
+            
+            if ($limit !== null && $offset !== null) {
+                $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+                $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+            }
+
+            $stmt->execute();
+            return $stmt;
+        } catch (PDOException $e) {
+            error_log("Error searchNilai: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function countSearchNilai($keyword = '', $filterTipe = '', $filterJurusan = '', $filterSemester = '')
+    {
+        try {
+            $query = "SELECT COUNT(*) as total FROM " . $this->mv_name . " WHERE 1=1 ";
+
+            if (!empty($keyword)) {
+                $query .= " AND (nim ILIKE :keyword 
+                            OR nama_mahasiswa ILIKE :keyword
+                            OR kode_mk ILIKE :keyword
+                            OR nama_mk ILIKE :keyword)";
+            }
+
+            if (!empty($filterTipe)) {
+                $query .= " AND tipe_nilai = :tipe_nilai ";
+            }
+
+            if (!empty($filterJurusan)) {
+                $query .= " AND id_jurusan_mk = :id_jurusan ";
+            }
+
+            if (!empty($filterSemester)) {
+                $query .= " AND semester_mk = :semester ";
+            }
 
             $stmt = $this->conn->prepare($query);
 
@@ -104,10 +164,11 @@ class NilaiModel
             }
 
             $stmt->execute();
-            return $stmt;
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $result['total'];
         } catch (PDOException $e) {
-            error_log("Error searchNilai: " . $e->getMessage());
-            return false;
+            error_log("Error countSearchNilai: " . $e->getMessage());
+            return 0;
         }
     }
 

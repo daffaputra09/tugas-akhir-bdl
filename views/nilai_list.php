@@ -96,7 +96,8 @@ include 'views/header.php';
                 </thead>
                 <tbody>
                     <?php
-                    $no = 1;
+
+                    $no = isset($page) ? (($page - 1) * 10 + 1) : 1;
                     while ($row = $nilai->fetch(PDO::FETCH_ASSOC)):
                     ?>
                         <tr>
@@ -141,6 +142,69 @@ include 'views/header.php';
                 </tbody>
             </table>
         </div>
+        
+        <?php 
+        if (isset($total_pages) && $total_pages > 1): 
+            $current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+            $action = isset($_GET['action']) ? $_GET['action'] : 'nilai_list';
+            $keyword = isset($_GET['keyword']) ? htmlspecialchars($_GET['keyword']) : '';
+            $filter_tipe = isset($_GET['filter_tipe']) ? htmlspecialchars($_GET['filter_tipe']) : '';
+            $filter_jurusan = isset($_GET['filter_jurusan']) ? htmlspecialchars($_GET['filter_jurusan']) : '';
+            $filter_semester = isset($_GET['filter_semester']) ? htmlspecialchars($_GET['filter_semester']) : '';
+            
+            echo '<div class="pagination">';
+
+            if ($current_page > 1) {
+                $first_params = ['action' => $action, 'page' => 1];
+                if (!empty($keyword)) $first_params['keyword'] = $keyword;
+                if (!empty($filter_tipe)) $first_params['filter_tipe'] = $filter_tipe;
+                if (!empty($filter_jurusan)) $first_params['filter_jurusan'] = $filter_jurusan;
+                if (!empty($filter_semester)) $first_params['filter_semester'] = $filter_semester;
+                echo '<a href="index.php?' . http_build_query($first_params) . '" class="pagination-btn">« Pertama</a>';
+            }
+
+            if ($current_page > 1) {
+                $prev_params = ['action' => $action, 'page' => $current_page - 1];
+                if (!empty($keyword)) $prev_params['keyword'] = $keyword;
+                if (!empty($filter_tipe)) $prev_params['filter_tipe'] = $filter_tipe;
+                if (!empty($filter_jurusan)) $prev_params['filter_jurusan'] = $filter_jurusan;
+                if (!empty($filter_semester)) $prev_params['filter_semester'] = $filter_semester;
+                echo '<a href="index.php?' . http_build_query($prev_params) . '" class="pagination-btn">‹ Sebelumnya</a>';
+            }
+            
+            $start_page = max(1, $current_page - 2);
+            $end_page = min($total_pages, $current_page + 2);
+            for ($i = $start_page; $i <= $end_page; $i++) {
+                $page_params = ['action' => $action, 'page' => $i];
+                if (!empty($keyword)) $page_params['keyword'] = $keyword;
+                if (!empty($filter_tipe)) $page_params['filter_tipe'] = $filter_tipe;
+                if (!empty($filter_jurusan)) $page_params['filter_jurusan'] = $filter_jurusan;
+                if (!empty($filter_semester)) $page_params['filter_semester'] = $filter_semester;
+                $active_class = ($i == $current_page) ? 'active' : '';
+                echo '<a href="index.php?' . http_build_query($page_params) . '" class="pagination-btn ' . $active_class . '">' . $i . '</a>';
+            }
+
+            if ($current_page < $total_pages) {
+                $next_params = ['action' => $action, 'page' => $current_page + 1];
+                if (!empty($keyword)) $next_params['keyword'] = $keyword;
+                if (!empty($filter_tipe)) $next_params['filter_tipe'] = $filter_tipe;
+                if (!empty($filter_jurusan)) $next_params['filter_jurusan'] = $filter_jurusan;
+                if (!empty($filter_semester)) $next_params['filter_semester'] = $filter_semester;
+                echo '<a href="index.php?' . http_build_query($next_params) . '" class="pagination-btn">Selanjutnya ›</a>';
+            }
+
+            if ($current_page < $total_pages) {
+                $last_params = ['action' => $action, 'page' => $total_pages];
+                if (!empty($keyword)) $last_params['keyword'] = $keyword;
+                if (!empty($filter_tipe)) $last_params['filter_tipe'] = $filter_tipe;
+                if (!empty($filter_jurusan)) $last_params['filter_jurusan'] = $filter_jurusan;
+                if (!empty($filter_semester)) $last_params['filter_semester'] = $filter_semester;
+                echo '<a href="index.php?' . http_build_query($last_params) . '" class="pagination-btn">Terakhir »</a>';
+            }
+            echo '</div>';
+            echo '<div class="pagination-info">Menampilkan halaman ' . $current_page . ' dari ' . $total_pages . ' (Total: ' . $total_records . ' data)</div>';
+        endif; 
+        ?>
     <?php else: ?>
         <div class="empty-state">
             <h3>Tidak ada data nilai</h3>

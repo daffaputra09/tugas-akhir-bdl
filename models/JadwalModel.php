@@ -40,7 +40,7 @@ class JadwalModel
         return $this->searchJadwal('', '', '');
     }
 
-    public function searchJadwal($keyword, $filterHari = '', $filterTahun = '')
+    public function searchJadwal($keyword, $filterHari = '', $filterTahun = '', $limit = null, $offset = null)
     {
         try {
             $query = "SELECT * FROM " . $this->table_name . " WHERE 1=1 ";
@@ -60,6 +60,57 @@ class JadwalModel
             }
 
             $query .= " ORDER BY hari DESC, jam_mulai ASC";
+            
+            if ($limit !== null && $offset !== null) {
+                $query .= " LIMIT :limit OFFSET :offset";
+            }
+
+            $stmt = $this->conn->prepare($query);
+
+            if (!empty($keyword)) {
+                $kw = "%{$keyword}%";
+                $stmt->bindParam(":keyword", $kw);
+            }
+
+            if (!empty($filterHari)) {
+                $stmt->bindParam(":hari", $filterHari);
+            }
+
+            if (!empty($filterTahun)) {
+                $stmt->bindParam(":tahun_akademik", $filterTahun);
+            }
+            
+            if ($limit !== null && $offset !== null) {
+                $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+                $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+            }
+
+            $stmt->execute();
+            return $stmt;
+        } catch (PDOException $e) {
+            error_log("Error searchJadwal: " . $e->getMessage());
+            return false;
+        }
+    }
+
+    public function countSearchJadwal($keyword, $filterHari = '', $filterTahun = '')
+    {
+        try {
+            $query = "SELECT COUNT(*) as total FROM " . $this->table_name . " WHERE 1=1 ";
+
+            if (!empty($keyword)) {
+                $query .= " AND (nama_mk ILIKE :keyword 
+                            OR nama_dosen ILIKE :keyword 
+                            OR nama_kelas ILIKE :keyword)";
+            }
+
+            if (!empty($filterHari)) {
+                $query .= " AND hari = :hari ";
+            }
+
+            if (!empty($filterTahun)) {
+                $query .= " AND tahun_akademik = :tahun_akademik ";
+            }
 
             $stmt = $this->conn->prepare($query);
 
@@ -77,10 +128,11 @@ class JadwalModel
             }
 
             $stmt->execute();
-            return $stmt;
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $result['total'];
         } catch (PDOException $e) {
-            error_log("Error searchJadwal: " . $e->getMessage());
-            return false;
+            error_log("Error countSearchJadwal: " . $e->getMessage());
+            return 0;
         }
     }
 

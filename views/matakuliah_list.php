@@ -47,7 +47,8 @@ include 'views/header.php';
                 </thead>
                 <tbody>
                     <?php
-                    $no = 1;
+
+                    $no = isset($page) ? (($page - 1) * 10 + 1) : 1;
                     while ($row = $matakuliah->fetch(PDO::FETCH_ASSOC)):
                     ?>
                         <tr>
@@ -68,6 +69,51 @@ include 'views/header.php';
                 </tbody>
             </table>
         </div>
+        
+        <?php 
+        if (isset($total_pages) && $total_pages > 1): 
+            $current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+            $action = isset($_GET['action']) ? $_GET['action'] : 'matakuliah_list';
+            $keyword = isset($_GET['keyword']) ? htmlspecialchars($_GET['keyword']) : '';
+            
+            echo '<div class="pagination">';
+
+            if ($current_page > 1) {
+                $first_params = ['action' => $action, 'page' => 1];
+                if (!empty($keyword)) $first_params['keyword'] = $keyword;
+                echo '<a href="index.php?' . http_build_query($first_params) . '" class="pagination-btn">« Pertama</a>';
+            }
+
+            if ($current_page > 1) {
+                $prev_params = ['action' => $action, 'page' => $current_page - 1];
+                if (!empty($keyword)) $prev_params['keyword'] = $keyword;
+                echo '<a href="index.php?' . http_build_query($prev_params) . '" class="pagination-btn">‹ Sebelumnya</a>';
+            }
+            
+            $start_page = max(1, $current_page - 2);
+            $end_page = min($total_pages, $current_page + 2);
+            for ($i = $start_page; $i <= $end_page; $i++) {
+                $page_params = ['action' => $action, 'page' => $i];
+                if (!empty($keyword)) $page_params['keyword'] = $keyword;
+                $active_class = ($i == $current_page) ? 'active' : '';
+                echo '<a href="index.php?' . http_build_query($page_params) . '" class="pagination-btn ' . $active_class . '">' . $i . '</a>';
+            }
+
+            if ($current_page < $total_pages) {
+                $next_params = ['action' => $action, 'page' => $current_page + 1];
+                if (!empty($keyword)) $next_params['keyword'] = $keyword;
+                echo '<a href="index.php?' . http_build_query($next_params) . '" class="pagination-btn">Selanjutnya ›</a>';
+            }
+
+            if ($current_page < $total_pages) {
+                $last_params = ['action' => $action, 'page' => $total_pages];
+                if (!empty($keyword)) $last_params['keyword'] = $keyword;
+                echo '<a href="index.php?' . http_build_query($last_params) . '" class="pagination-btn">Terakhir »</a>';
+            }
+            echo '</div>';
+            echo '<div class="pagination-info">Menampilkan halaman ' . $current_page . ' dari ' . $total_pages . ' (Total: ' . $total_records . ' data)</div>';
+        endif; 
+        ?>
     <?php else: ?>
         <div class="empty-state">
             <h3>Tidak ada data matakuliah</h3>

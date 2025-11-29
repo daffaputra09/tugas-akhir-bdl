@@ -13,7 +13,14 @@ class KelasController
     public function list(): void
     {
         try {
-            $kelas = $this->kelasModel->getAllKelas();
+            $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+            $per_page = 10;
+            $offset = ($page - 1) * $per_page;
+            
+            $total_records = $this->kelasModel->countTotalKelas();
+            $total_pages = ceil($total_records / $per_page);
+            
+            $kelas = $this->kelasModel->getAllKelas($per_page, $offset);
             if (!$kelas) {
                 throw new Exception("Gagal mengambil data kelas");
             }
@@ -153,13 +160,24 @@ class KelasController
         $error = null;
         
         try {
+            $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+            $per_page = 10;
+            $offset = ($page - 1) * $per_page;
+            
             if (isset($_GET['keyword']) && !empty($_GET['keyword'])) {
-                $kelas = $this->kelasModel->searchKelas($_GET['keyword']);
+                $keyword = $_GET['keyword'];
+                $total_records = $this->kelasModel->countSearchKelas($keyword);
+                $total_pages = ceil($total_records / $per_page);
+                
+                $kelas = $this->kelasModel->searchKelas($keyword, $per_page, $offset);
                 if (!$kelas) {
                     throw new Exception("Pencarian gagal");
                 }
             } else {
-                $kelas = $this->kelasModel->getAllKelas();
+                $total_records = $this->kelasModel->countTotalKelas();
+                $total_pages = ceil($total_records / $per_page);
+                
+                $kelas = $this->kelasModel->getAllKelas($per_page, $offset);
                 if (!$kelas) {
                     throw new Exception("Gagal mengambil data kelas");
                 }

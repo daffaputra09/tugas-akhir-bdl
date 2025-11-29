@@ -9,7 +9,7 @@ class MatakuliahModel
         $this->conn = $db;
     }
 
-    public function getAllMatakuliah()
+    public function getAllMatakuliah($limit = null, $offset = null)
     {
         try {
             $query = "SELECT 
@@ -25,12 +25,36 @@ class MatakuliahModel
                         LEFT JOIN jurusan j ON m.id_jurusan = j.id_jurusan
                       ORDER BY 
                         m.kode_mk";
+            
+            if ($limit !== null && $offset !== null) {
+                $query .= " LIMIT :limit OFFSET :offset";
+            }
+            
             $stmt = $this->conn->prepare($query);
+            
+            if ($limit !== null && $offset !== null) {
+                $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+                $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+            }
+            
             $stmt->execute();
             return $stmt;
         } catch (PDOException $e) {
             error_log("Error getAllMatakuliah: " . $e->getMessage());
             return false;
+        }
+    }
+
+    public function countTotalMatakuliah() {
+        try {
+            $query = "SELECT COUNT(*) as total FROM " . $this->table_name;
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $result['total'];
+        } catch (PDOException $e) {
+            error_log("Error countTotalMatakuliah: " . $e->getMessage());
+            return 0;
         }
     }
 
@@ -149,7 +173,7 @@ class MatakuliahModel
         }
     }
 
-    public function searchMatakuliah($keyword)
+    public function searchMatakuliah($keyword, $limit = null, $offset = null)
     {
         try {
             $query = "SELECT 
@@ -169,14 +193,45 @@ class MatakuliahModel
                         OR j.nama_jurusan ILIKE :keyword
                       ORDER BY 
                         m.kode_mk";
+            
+            if ($limit !== null && $offset !== null) {
+                $query .= " LIMIT :limit OFFSET :offset";
+            }
+            
             $stmt = $this->conn->prepare($query);
             $kw = "%{$keyword}%";
             $stmt->bindParam(":keyword", $kw);
+            
+            if ($limit !== null && $offset !== null) {
+                $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+                $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+            }
+            
             $stmt->execute();
             return $stmt;
         } catch (PDOException $e) {
             error_log("Error searchMatakuliah: " . $e->getMessage());
             return false;
+        }
+    }
+
+    public function countSearchMatakuliah($keyword) {
+        try {
+            $query = "SELECT COUNT(*) as total 
+                      FROM " . $this->table_name . " m
+                      LEFT JOIN jurusan j ON m.id_jurusan = j.id_jurusan
+                      WHERE m.kode_mk ILIKE :keyword 
+                        OR m.nama_mk ILIKE :keyword
+                        OR j.nama_jurusan ILIKE :keyword";
+            $stmt = $this->conn->prepare($query);
+            $kw = "%{$keyword}%";
+            $stmt->bindParam(":keyword", $kw);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $result['total'];
+        } catch (PDOException $e) {
+            error_log("Error countSearchMatakuliah: " . $e->getMessage());
+            return 0;
         }
     }
 }

@@ -34,7 +34,7 @@ $nilaiModel = new NilaiModel($db);
 $nilaiController = new NilaiController($nilaiModel);
 
 
-$action = isset($_GET['action']) ? $_GET['action'] : 'list';
+$action = isset($_GET['action']) ? $_GET['action'] : 'dashboard';
 
 switch ($action) {
     case 'dashboard':

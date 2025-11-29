@@ -1,20 +1,44 @@
 document.addEventListener('DOMContentLoaded', function() {
     
+    // Toggle Sidebar untuk Mobile
+    const hamburgerBtn = document.getElementById('hamburgerBtn');
+    const sidebar = document.querySelector('.sidebar');
+    const sidebarOverlay = document.getElementById('sidebarOverlay');
+    
+    if (hamburgerBtn) {
+        hamburgerBtn.addEventListener('click', function() {
+            sidebar.classList.toggle('active');
+            sidebarOverlay.classList.toggle('active');
+            document.body.classList.toggle('sidebar-open');
+        });
+    }
+    
+    if (sidebarOverlay) {
+        sidebarOverlay.addEventListener('click', function() {
+            sidebar.classList.remove('active');
+            sidebarOverlay.classList.remove('active');
+            document.body.classList.remove('sidebar-open');
+        });
+    }
+    
+    // Close sidebar saat klik menu (hanya di mobile)
+    const menuLinks = document.querySelectorAll('.menu-link');
+    menuLinks.forEach(function(link) {
+        link.addEventListener('click', function() {
+            if (window.innerWidth <= 768) {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+                document.body.classList.remove('sidebar-open');
+            }
+        });
+    });
+    
     // Auto hide alert setelah 5 detik
     var alerts = document.querySelectorAll('.alert');
     alerts.forEach(function(alert) {
         setTimeout(function() {
             alert.style.display = 'none';
         }, 5000);
-    });
-
-    // Highlight menu aktif
-    var currentUrl = window.location.href;
-    var menuLinks = document.querySelectorAll('.menu-link');
-    menuLinks.forEach(function(link) {
-        if (currentUrl.indexOf(link.getAttribute('href')) > -1) {
-            link.classList.add('active');
-        }
     });
 
     // Format input NIM (hanya angka)

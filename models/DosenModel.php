@@ -7,7 +7,7 @@ class DosenModel {
         $this->conn = $db;
     }
 
-    public function getAllDosen() {
+    public function getAllDosen($limit = null, $offset = null) {
         try {
             $query = "SELECT 
                         d.id_dosen,
@@ -21,12 +21,36 @@ class DosenModel {
                       FROM " . $this->table_name . " d
                       LEFT JOIN jurusan j ON d.id_jurusan = j.id_jurusan
                       ORDER BY d.id_dosen DESC";
+            
+            if ($limit !== null && $offset !== null) {
+                $query .= " LIMIT :limit OFFSET :offset";
+            }
+            
             $stmt = $this->conn->prepare($query);
+            
+            if ($limit !== null && $offset !== null) {
+                $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+                $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+            }
+            
             $stmt->execute();
             return $stmt;
         } catch (PDOException $e) {
             error_log("Error getAllDosen: " . $e->getMessage());
             return false;
+        }
+    }
+
+    public function countTotalDosen() {
+        try {
+            $query = "SELECT COUNT(*) as total FROM " . $this->table_name;
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $result['total'];
+        } catch (PDOException $e) {
+            error_log("Error countTotalDosen: " . $e->getMessage());
+            return 0;
         }
     }
 
@@ -126,7 +150,7 @@ class DosenModel {
         }
     }
 
-    public function searchDosen($keyword) {
+    public function searchDosen($keyword, $limit = null, $offset = null) {
         try {
             $query = "SELECT 
                         d.id_dosen,
@@ -142,14 +166,44 @@ class DosenModel {
                          OR d.nama_dosen ILIKE :keyword
                          OR d.email ILIKE :keyword
                       ORDER BY d.id_dosen DESC";
+            
+            if ($limit !== null && $offset !== null) {
+                $query .= " LIMIT :limit OFFSET :offset";
+            }
+            
             $stmt = $this->conn->prepare($query);
             $kw = "%{$keyword}%";
             $stmt->bindParam(":keyword", $kw);
+            
+            if ($limit !== null && $offset !== null) {
+                $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+                $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+            }
+            
             $stmt->execute();
             return $stmt;
         } catch (PDOException $e) {
             error_log("Error searchDosen: " . $e->getMessage());
             return false;
+        }
+    }
+
+    public function countSearchDosen($keyword) {
+        try {
+            $query = "SELECT COUNT(*) as total 
+                      FROM " . $this->table_name . " d
+                      WHERE d.nip ILIKE :keyword
+                         OR d.nama_dosen ILIKE :keyword
+                         OR d.email ILIKE :keyword";
+            $stmt = $this->conn->prepare($query);
+            $kw = "%{$keyword}%";
+            $stmt->bindParam(":keyword", $kw);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $result['total'];
+        } catch (PDOException $e) {
+            error_log("Error countSearchDosen: " . $e->getMessage());
+            return 0;
         }
     }
 

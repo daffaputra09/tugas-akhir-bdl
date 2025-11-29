@@ -11,7 +11,14 @@ class DosenController
     public function list(): void
     {
         try {
-            $dosen = $this->model->getAllDosen();
+            $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+            $per_page = 10;
+            $offset = ($page - 1) * $per_page;
+            
+            $total_records = $this->model->countTotalDosen();
+            $total_pages = ceil($total_records / $per_page);
+            
+            $dosen = $this->model->getAllDosen($per_page, $offset);
             include 'views/dosen_list.php';
         } catch (Exception $e) {
             error_log("Error in list: " . $e->getMessage());
@@ -140,13 +147,24 @@ class DosenController
         $error = null;
         
         try {
+            $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+            $per_page = 10;
+            $offset = ($page - 1) * $per_page;
+            
             if (isset($_GET['keyword']) && !empty($_GET['keyword'])) {
-                $dosen = $this->model->searchDosen($_GET['keyword']);
+                $keyword = $_GET['keyword'];
+                $total_records = $this->model->countSearchDosen($keyword);
+                $total_pages = ceil($total_records / $per_page);
+                
+                $dosen = $this->model->searchDosen($keyword, $per_page, $offset);
                 if (!$dosen) {
                     throw new Exception("Gagal melakukan pencarian");
                 }
             } else {
-                $dosen = $this->model->getAllDosen();
+                $total_records = $this->model->countTotalDosen();
+                $total_pages = ceil($total_records / $per_page);
+                
+                $dosen = $this->model->getAllDosen($per_page, $offset);
                 if (!$dosen) {
                     throw new Exception("Gagal mengambil data dosen");
                 }

@@ -11,10 +11,17 @@ class JadwalController
     public function list(): void
     {
         try {
+            $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+            $per_page = 10;
+            $offset = ($page - 1) * $per_page;
+            
             $listHari = $this->model->getHariOptions();
             $listTahun = $this->model->getTahunOptions();
 
-            $jadwal = $this->model->getAllJadwal();
+            $total_records = $this->model->countSearchJadwal('', '', '');
+            $total_pages = ceil($total_records / $per_page);
+            
+            $jadwal = $this->model->searchJadwal('', '', '', $per_page, $offset);
             if (!$jadwal) {
                 throw new Exception("Gagal mengambil data jadwal");
             }
@@ -31,6 +38,10 @@ class JadwalController
         $error = null;
         
         try {
+            $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+            $per_page = 10;
+            $offset = ($page - 1) * $per_page;
+            
             $listHari = $this->model->getHariOptions();
             $listTahun = $this->model->getTahunOptions();
 
@@ -38,7 +49,10 @@ class JadwalController
             $filterHari = isset($_GET['filter_hari']) ? $_GET['filter_hari'] : '';
             $filterTahun = isset($_GET['filter_tahun']) ? $_GET['filter_tahun'] : '';
 
-            $jadwal = $this->model->searchJadwal($keyword, $filterHari, $filterTahun);
+            $total_records = $this->model->countSearchJadwal($keyword, $filterHari, $filterTahun);
+            $total_pages = ceil($total_records / $per_page);
+
+            $jadwal = $this->model->searchJadwal($keyword, $filterHari, $filterTahun, $per_page, $offset);
             if (!$jadwal) {
                 throw new Exception("Pencarian gagal");
             }

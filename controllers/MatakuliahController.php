@@ -11,7 +11,14 @@ class MatakuliahController
     public function list(): void
     {
         try {
-            $matakuliah = $this->model->getAllMatakuliah();
+            $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+            $per_page = 10;
+            $offset = ($page - 1) * $per_page;
+            
+            $total_records = $this->model->countTotalMatakuliah();
+            $total_pages = ceil($total_records / $per_page);
+            
+            $matakuliah = $this->model->getAllMatakuliah($per_page, $offset);
             if (!$matakuliah) {
                 throw new Exception("Gagal mengambil data matakuliah");
             }
@@ -169,13 +176,24 @@ class MatakuliahController
         $error = null;
         
         try {
+            $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+            $per_page = 10;
+            $offset = ($page - 1) * $per_page;
+            
             if (isset($_GET['keyword']) && !empty($_GET['keyword'])) {
-                $matakuliah = $this->model->searchMatakuliah($_GET['keyword']);
+                $keyword = $_GET['keyword'];
+                $total_records = $this->model->countSearchMatakuliah($keyword);
+                $total_pages = ceil($total_records / $per_page);
+                
+                $matakuliah = $this->model->searchMatakuliah($keyword, $per_page, $offset);
                 if (!$matakuliah) {
                     throw new Exception("Pencarian gagal");
                 }
             } else {
-                $matakuliah = $this->model->getAllMatakuliah();
+                $total_records = $this->model->countTotalMatakuliah();
+                $total_pages = ceil($total_records / $per_page);
+                
+                $matakuliah = $this->model->getAllMatakuliah($per_page, $offset);
                 if (!$matakuliah) {
                     throw new Exception("Gagal mengambil data matakuliah");
                 }

@@ -85,7 +85,8 @@ include 'views/header.php';
                 </thead>
                 <tbody>
                     <?php
-                    $no = 1;
+
+                    $no = isset($page) ? (($page - 1) * 10 + 1) : 1;
                     while ($row = $jadwal->fetch(PDO::FETCH_ASSOC)):
                     ?>
                         <tr>
@@ -130,6 +131,63 @@ include 'views/header.php';
                 </tbody>
             </table>
         </div>
+        
+        <?php 
+        if (isset($total_pages) && $total_pages > 1): 
+            $current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+            $action = isset($_GET['action']) ? $_GET['action'] : 'jadwal_list';
+            $keyword = isset($_GET['keyword']) ? htmlspecialchars($_GET['keyword']) : '';
+            $filter_hari = isset($_GET['filter_hari']) ? htmlspecialchars($_GET['filter_hari']) : '';
+            $filter_tahun = isset($_GET['filter_tahun']) ? htmlspecialchars($_GET['filter_tahun']) : '';
+            
+            echo '<div class="pagination">';
+
+            if ($current_page > 1) {
+                $first_params = ['action' => $action, 'page' => 1];
+                if (!empty($keyword)) $first_params['keyword'] = $keyword;
+                if (!empty($filter_hari)) $first_params['filter_hari'] = $filter_hari;
+                if (!empty($filter_tahun)) $first_params['filter_tahun'] = $filter_tahun;
+                echo '<a href="index.php?' . http_build_query($first_params) . '" class="pagination-btn">« Pertama</a>';
+            }
+
+            if ($current_page > 1) {
+                $prev_params = ['action' => $action, 'page' => $current_page - 1];
+                if (!empty($keyword)) $prev_params['keyword'] = $keyword;
+                if (!empty($filter_hari)) $prev_params['filter_hari'] = $filter_hari;
+                if (!empty($filter_tahun)) $prev_params['filter_tahun'] = $filter_tahun;
+                echo '<a href="index.php?' . http_build_query($prev_params) . '" class="pagination-btn">‹ Sebelumnya</a>';
+            }
+            
+            $start_page = max(1, $current_page - 2);
+            $end_page = min($total_pages, $current_page + 2);
+            for ($i = $start_page; $i <= $end_page; $i++) {
+                $page_params = ['action' => $action, 'page' => $i];
+                if (!empty($keyword)) $page_params['keyword'] = $keyword;
+                if (!empty($filter_hari)) $page_params['filter_hari'] = $filter_hari;
+                if (!empty($filter_tahun)) $page_params['filter_tahun'] = $filter_tahun;
+                $active_class = ($i == $current_page) ? 'active' : '';
+                echo '<a href="index.php?' . http_build_query($page_params) . '" class="pagination-btn ' . $active_class . '">' . $i . '</a>';
+            }
+
+            if ($current_page < $total_pages) {
+                $next_params = ['action' => $action, 'page' => $current_page + 1];
+                if (!empty($keyword)) $next_params['keyword'] = $keyword;
+                if (!empty($filter_hari)) $next_params['filter_hari'] = $filter_hari;
+                if (!empty($filter_tahun)) $next_params['filter_tahun'] = $filter_tahun;
+                echo '<a href="index.php?' . http_build_query($next_params) . '" class="pagination-btn">Selanjutnya ›</a>';
+            }
+
+            if ($current_page < $total_pages) {
+                $last_params = ['action' => $action, 'page' => $total_pages];
+                if (!empty($keyword)) $last_params['keyword'] = $keyword;
+                if (!empty($filter_hari)) $last_params['filter_hari'] = $filter_hari;
+                if (!empty($filter_tahun)) $last_params['filter_tahun'] = $filter_tahun;
+                echo '<a href="index.php?' . http_build_query($last_params) . '" class="pagination-btn">Terakhir »</a>';
+            }
+            echo '</div>';
+            echo '<div class="pagination-info">Menampilkan halaman ' . $current_page . ' dari ' . $total_pages . ' (Total: ' . $total_records . ' data)</div>';
+        endif; 
+        ?>
     <?php else: ?>
         <div class="empty-state">
             <h3>Tidak ada data jadwal</h3>

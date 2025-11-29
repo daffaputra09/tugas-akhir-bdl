@@ -17,10 +17,18 @@ class MahasiswaController
     public function list(): void
     {
         try {
-            $mahasiswa = $this->model->getAllMahasiswa();
+            $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+            $per_page = 10;
+            $offset = ($page - 1) * $per_page;
+            
+            $total_records = $this->model->countTotalMahasiswa();
+            $total_pages = ceil($total_records / $per_page);
+            
+            $mahasiswa = $this->model->getAllMahasiswa($per_page, $offset);
             if (!$mahasiswa) {
                 throw new Exception("Gagal mengambil data mahasiswa");
             }
+            
             include 'views/mahasiswa_list.php';
         } catch (Exception $e) {
             error_log("Error in list: " . $e->getMessage());
@@ -176,13 +184,24 @@ class MahasiswaController
         $error = null;
         
         try {
+            $page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+            $per_page = 10;
+            $offset = ($page - 1) * $per_page;
+            
             if (isset($_GET['keyword']) && !empty($_GET['keyword'])) {
-                $mahasiswa = $this->model->searchMahasiswa($_GET['keyword']);
+                $keyword = $_GET['keyword'];
+                $total_records = $this->model->countSearchMahasiswa($keyword);
+                $total_pages = ceil($total_records / $per_page);
+                
+                $mahasiswa = $this->model->searchMahasiswa($keyword, $per_page, $offset);
                 if (!$mahasiswa) {
                     throw new Exception("Pencarian gagal");
                 }
             } else {
-                $mahasiswa = $this->model->getAllMahasiswa();
+                $total_records = $this->model->countTotalMahasiswa();
+                $total_pages = ceil($total_records / $per_page);
+                
+                $mahasiswa = $this->model->getAllMahasiswa($per_page, $offset);
                 if (!$mahasiswa) {
                     throw new Exception("Gagal mengambil data mahasiswa");
                 }

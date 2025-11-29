@@ -7,7 +7,7 @@ class MahasiswaModel {
         $this->conn = $db;
     }
 
-    public function getAllMahasiswa() {
+    public function getAllMahasiswa($limit = null, $offset = null) {
         try {
             $query = "SELECT 
                         m.id_mahasiswa,
@@ -27,12 +27,36 @@ class MahasiswaModel {
                       LEFT JOIN jurusan j ON m.id_jurusan = j.id_jurusan
                       LEFT JOIN kelas k ON m.id_kelas = k.id_kelas
                       ORDER BY m.id_mahasiswa DESC";
+            
+            if ($limit !== null && $offset !== null) {
+                $query .= " LIMIT :limit OFFSET :offset";
+            }
+            
             $stmt = $this->conn->prepare($query);
+            
+            if ($limit !== null && $offset !== null) {
+                $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+                $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+            }
+            
             $stmt->execute();
             return $stmt;
         } catch (PDOException $e) {
             error_log("Error getAllMahasiswa: " . $e->getMessage());
             return false;
+        }
+    }
+
+    public function countTotalMahasiswa() {
+        try {
+            $query = "SELECT COUNT(*) as total FROM " . $this->table_name;
+            $stmt = $this->conn->prepare($query);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $result['total'];
+        } catch (PDOException $e) {
+            error_log("Error countTotalMahasiswa: " . $e->getMessage());
+            return 0;
         }
     }
 
@@ -262,7 +286,7 @@ class MahasiswaModel {
         }
     }
 
-    public function searchMahasiswa($keyword) {
+    public function searchMahasiswa($keyword, $limit = null, $offset = null) {
         try {
             $query = "SELECT 
                         m.id_mahasiswa,
@@ -283,14 +307,44 @@ class MahasiswaModel {
                          OR m.nama_mahasiswa LIKE :keyword
                          OR m.email LIKE :keyword
                       ORDER BY m.id_mahasiswa DESC";
+            
+            if ($limit !== null && $offset !== null) {
+                $query .= " LIMIT :limit OFFSET :offset";
+            }
+            
             $stmt = $this->conn->prepare($query);
             $keyword = "%{$keyword}%";
             $stmt->bindParam(":keyword", $keyword);
+            
+            if ($limit !== null && $offset !== null) {
+                $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+                $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+            }
+            
             $stmt->execute();
             return $stmt;
         } catch (PDOException $e) {
             error_log("Error searchMahasiswa: " . $e->getMessage());
             return false;
+        }
+    }
+
+    public function countSearchMahasiswa($keyword) {
+        try {
+            $query = "SELECT COUNT(*) as total 
+                      FROM " . $this->table_name . " m
+                      WHERE m.nim LIKE :keyword 
+                         OR m.nama_mahasiswa LIKE :keyword
+                         OR m.email LIKE :keyword";
+            $stmt = $this->conn->prepare($query);
+            $keyword = "%{$keyword}%";
+            $stmt->bindParam(":keyword", $keyword);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $result['total'];
+        } catch (PDOException $e) {
+            error_log("Error countSearchMahasiswa: " . $e->getMessage());
+            return 0;
         }
     }
 

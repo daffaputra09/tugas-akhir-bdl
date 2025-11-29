@@ -3,7 +3,6 @@ $page_title = "Data Mahasiswa";
 include 'views/header.php';
 ?>
 
-<!-- alert messages -->
 <?php if (isset($_GET['message'])): ?>
     <?php if ($_GET['message'] == 'created'): ?>
         <div class="alert alert-success">
@@ -30,13 +29,12 @@ include 'views/header.php';
         <a href="index.php?action=create" class="btn btn-primary">Tambah Mahasiswa</a>
     </div>
 
-    <!-- search box -->
     <div class="search-box">
         <form method="GET" action="index.php">
             <input type="hidden" name="action" value="search">
-            <input type="text" name="keyword" class="search-input" 
-                   placeholder="Cari berdasarkan NIM, Nama, atau Email..." 
-                   value="<?php echo isset($_GET['keyword']) ? htmlspecialchars($_GET['keyword']) : ''; ?>">
+            <input type="text" name="keyword" class="search-input"
+                placeholder="Cari berdasarkan NIM, Nama atau Email..."
+                value="<?php echo isset($_GET['keyword']) ? htmlspecialchars($_GET['keyword']) : ''; ?>">
         </form>
     </div>
 
@@ -45,63 +43,65 @@ include 'views/header.php';
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>No</th>
-                        <th>Foto</th>
-                        <th>NIM</th>
-                        <th>Nama Mahasiswa</th>
-                        <th>Jurusan</th>
-                        <th>Kelas</th>
-                        <th>Jenis Kelamin</th>
-                        <th>Tahun Masuk</th>
-                        <th>Semester</th>
-                        <th>Email</th>
-                        <th>No HP</th>
-                        <th>Aksi</th>
+                        <th width="5%">No</th>
+                        <th width="10%">Foto</th>
+                        <th width="15%">NIM</th>
+                        <th width="25%">Nama Mahasiswa</th>
+                        <th width="20%">Jurusan & Kelas</th>
+                        <th width="10%">L/P</th>
+                        <th width="10%">IPK</th>
+                        <th width="15%">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php 
-
+                    <?php
                     $no = isset($page) ? (($page - 1) * 10 + 1) : 1;
-                    while ($row = $mahasiswa->fetch(PDO::FETCH_ASSOC)): 
+                    while ($row = $mahasiswa->fetch(PDO::FETCH_ASSOC)):
                     ?>
                         <tr>
                             <td><?php echo $no++; ?></td>
                             <td>
                                 <?php if (!empty($row['foto']) && file_exists($row['foto'])): ?>
-                                    <img src="<?php echo htmlspecialchars($row['foto']); ?>" 
-                                         alt="Foto <?php echo htmlspecialchars($row['nama_mahasiswa']); ?>" 
-                                         style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px; border: 1px solid #ddd;">
+                                    <img src="<?php echo htmlspecialchars($row['foto']); ?>"
+                                        alt="Foto"
+                                        style="width: 40px; height: 40px; object-fit: cover; border-radius: 50%; border: 1px solid #ddd;">
                                 <?php else: ?>
-                                    <div style="width: 50px; height: 50px; background-color: #f0f0f0; border-radius: 5px; display: flex; align-items: center; justify-content: center; color: #999; font-size: 12px;">
-                                        No Photo
+                                    <div style="width: 40px; height: 40px; background-color: #eee; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #aaa; font-size: 10px;">
+                                        No IMG
                                     </div>
                                 <?php endif; ?>
                             </td>
                             <td><strong><?php echo htmlspecialchars($row['nim']); ?></strong></td>
                             <td><?php echo htmlspecialchars($row['nama_mahasiswa']); ?></td>
-                            <td><?php echo htmlspecialchars($row['nama_jurusan'] ?? '-'); ?></td>
-                            <td><?php echo htmlspecialchars($row['nama_kelas'] ?? '-'); ?></td>
+                            <td>
+                                <div><?php echo htmlspecialchars($row['nama_jurusan'] ?? '-'); ?></div>
+                                <small style="color: #666; font-size: 12px;"><?php echo htmlspecialchars($row['nama_kelas'] ?? '-'); ?></small>
+                            </td>
                             <td>
                                 <?php if ($row['jenis_kelamin'] == 'L'): ?>
-                                    <span class="badge badge-male">Laki-laki</span>
+                                    <span class="badge badge-male">L</span>
                                 <?php else: ?>
-                                    <span class="badge badge-female">Perempuan</span>
+                                    <span class="badge badge-female">P</span>
                                 <?php endif; ?>
                             </td>
-                            <td><?php echo htmlspecialchars($row['tahun_masuk']); ?></td>
-                            <td><?php echo htmlspecialchars($row['semester']); ?></td>
-                            <td><?php echo htmlspecialchars($row['email'] ?? '-'); ?></td>
-                            <td><?php echo htmlspecialchars($row['no_hp'] ?? '-'); ?></td>
+                            <td>
+                                <?php
+                                $ipk = $row['ipk'] ?? 0;
+                                $badgeColor = $ipk >= 3.00 ? 'badge-success' : ($ipk >= 2.00 ? 'badge-warning' : 'badge-danger');
+                                ?>
+                                <span class="badge <?= $badgeColor ?>"><?= number_format($ipk, 2) ?></span>
+                            </td>
                             <td>
                                 <div class="btn-group">
-                                    <a href="index.php?action=edit&id=<?php echo $row['id_mahasiswa']; ?>" 
-                                       class="btn btn-edit">Edit</a>
-                                    <a href="index.php?action=delete&id=<?php echo $row['id_mahasiswa']; ?>" 
-                                       class="btn btn-delete"
-                                       onclick="return confirm('Apakah Anda yakin ingin menghapus mahasiswa ini?')">Hapus</a>
-                                    <a href="index.php?action=detail&nim=<?php echo $row['nim']; ?>" 
-                                       class="btn btn-view">Detail</a>
+                                    <a href="index.php?action=detail&id=<?php echo $row['id_mahasiswa']; ?>"
+                                        class="btn btn-view" title="Lihat Detail">Detail</a>
+
+                                    <a href="index.php?action=edit&id=<?php echo $row['id_mahasiswa']; ?>"
+                                        class="btn btn-edit" title="Edit">Edit</a>
+
+                                    <a href="index.php?action=delete&id=<?php echo $row['id_mahasiswa']; ?>"
+                                        class="btn btn-delete"
+                                        onclick="return confirm('Apakah Anda yakin ingin menghapus mahasiswa ini?')" title="Hapus">Hapus</a>
                                 </div>
                             </td>
                         </tr>
@@ -109,13 +109,13 @@ include 'views/header.php';
                 </tbody>
             </table>
         </div>
-        
-        <?php 
-        if (isset($total_pages) && $total_pages > 1): 
+
+        <?php
+        if (isset($total_pages) && $total_pages > 1):
             $current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
             $action = isset($_GET['action']) ? $_GET['action'] : 'list';
             $keyword = isset($_GET['keyword']) ? htmlspecialchars($_GET['keyword']) : '';
-            
+
             echo '<div class="pagination">';
 
             if ($current_page > 1) {
@@ -129,7 +129,7 @@ include 'views/header.php';
                 if (!empty($keyword)) $prev_params['keyword'] = $keyword;
                 echo '<a href="index.php?' . http_build_query($prev_params) . '" class="pagination-btn">‹ Sebelumnya</a>';
             }
-            
+
             $start_page = max(1, $current_page - 2);
             $end_page = min($total_pages, $current_page + 2);
             for ($i = $start_page; $i <= $end_page; $i++) {
@@ -151,8 +151,8 @@ include 'views/header.php';
                 echo '<a href="index.php?' . http_build_query($last_params) . '" class="pagination-btn">Terakhir »</a>';
             }
             echo '</div>';
-            echo '<div class="pagination-info">Menampilkan halaman ' . $current_page . ' dari ' . $total_pages . ' (Total: ' . $total_records . ' data)</div>';
-        endif; 
+            echo '<div class="pagination-info">Menampilkan halaman ' . $current_page . ' dari ' . $total_pages . ' (Total: ' . (isset($total_records) ? $total_records : '0') . ' data)</div>';
+        endif;
         ?>
     <?php else: ?>
         <div class="empty-state">

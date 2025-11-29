@@ -82,6 +82,12 @@ switch ($action) {
     case 'dosen_search':
         $dosenController->search();
         break;
+    case 'dosen_jadwal':
+        $dosenController->jadwal();
+        break;
+    case 'dosen_toggle_status':
+        $dosenController->toggleStatus();
+        break;
 
     // Jurusan routes
     case 'jurusan_list':

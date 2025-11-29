@@ -1,44 +1,43 @@
 <?php
-class MahasiswaModel {
+class MahasiswaModel
+{
     private $conn;
     private $table_name = "mahasiswa";
 
-    public function __construct($db) {
+    public function __construct($db)
+    {
         $this->conn = $db;
     }
 
-    public function getAllMahasiswa($limit = null, $offset = null) {
+    public function getAllMahasiswa($limit = null, $offset = null)
+    {
         try {
             $query = "SELECT 
-                        m.id_mahasiswa,
-                        m.nim,
-                        m.nama_mahasiswa,
-                        m.email,
-                        m.jenis_kelamin,
-                        m.no_hp,
-                        m.tahun_masuk,
-                        m.semester,
-                        m.foto,
-                        j.nama_jurusan,
-                        k.nama_kelas,
-                        m.id_jurusan,
-                        m.id_kelas
-                      FROM " . $this->table_name . " m
-                      LEFT JOIN jurusan j ON m.id_jurusan = j.id_jurusan
-                      LEFT JOIN kelas k ON m.id_kelas = k.id_kelas
-                      ORDER BY m.id_mahasiswa DESC";
-            
+                    m.id_mahasiswa,
+                    m.nim,
+                    m.nama_mahasiswa,
+                    m.jenis_kelamin,
+                    m.foto,
+                    m.email,
+                    j.nama_jurusan,
+                    k.nama_kelas,
+                    public.hitung_ipk(m.id_mahasiswa) as ipk
+                  FROM " . $this->table_name . " m
+                  LEFT JOIN jurusan j ON m.id_jurusan = j.id_jurusan
+                  LEFT JOIN kelas k ON m.id_kelas = k.id_kelas
+                  ORDER BY m.nama_mahasiswa ASC";
+
             if ($limit !== null && $offset !== null) {
                 $query .= " LIMIT :limit OFFSET :offset";
             }
-            
+
             $stmt = $this->conn->prepare($query);
-            
+
             if ($limit !== null && $offset !== null) {
                 $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
                 $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
             }
-            
+
             $stmt->execute();
             return $stmt;
         } catch (PDOException $e) {
@@ -47,7 +46,8 @@ class MahasiswaModel {
         }
     }
 
-    public function countTotalMahasiswa() {
+    public function countTotalMahasiswa()
+    {
         try {
             $query = "SELECT COUNT(*) as total FROM " . $this->table_name;
             $stmt = $this->conn->prepare($query);
@@ -60,14 +60,15 @@ class MahasiswaModel {
         }
     }
 
-    public function createMahasiswa($data) {
+    public function createMahasiswa($data)
+    {
         try {
             $this->conn->beginTransaction();
-            
+
             $query = "INSERT INTO " . $this->table_name . " 
                 (nim, nama_mahasiswa, id_jurusan, tahun_masuk, email, jenis_kelamin, no_hp, semester, id_kelas, foto)
                 VALUES (:nim, :nama_mahasiswa, :id_jurusan, :tahun_masuk, :email, :jenis_kelamin, :no_hp, :semester, :id_kelas, :foto)";
-            
+
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(":nim", $data['nim']);
             $stmt->bindParam(":nama_mahasiswa", $data['nama_mahasiswa']);
@@ -93,10 +94,11 @@ class MahasiswaModel {
         }
     }
 
-    public function updateMahasiswa($id, $data) {
+    public function updateMahasiswa($id, $data)
+    {
         try {
             $this->conn->beginTransaction();
-            
+
             if (isset($data['foto']) && !empty($data['foto'])) {
                 $query = "UPDATE " . $this->table_name . "
                     SET nim = :nim, 
@@ -135,7 +137,7 @@ class MahasiswaModel {
             $stmt->bindParam(":no_hp", $data['no_hp']);
             $stmt->bindParam(":semester", $data['semester']);
             $stmt->bindParam(":id_kelas", $data['id_kelas']);
-            
+
             if (isset($data['foto']) && !empty($data['foto'])) {
                 $stmt->bindParam(":foto", $data['foto']);
             }
@@ -153,20 +155,21 @@ class MahasiswaModel {
         }
     }
 
-    public function deleteMahasiswa($id) {
+    public function deleteMahasiswa($id)
+    {
         try {
             $this->conn->beginTransaction();
-            
+
             $mahasiswa = $this->getMahasiswaById($id);
             $foto_path = $mahasiswa['foto'] ?? null;
-            
+
             $query = "DELETE FROM " . $this->table_name . " WHERE id_mahasiswa = :id";
             $stmt = $this->conn->prepare($query);
             $stmt->bindParam(":id", $id);
-            
+
             if ($stmt->execute()) {
                 $this->conn->commit();
-                
+
                 // Hapus file foto setelah commit berhasil
                 if ($foto_path && file_exists($foto_path)) {
                     unlink($foto_path);
@@ -182,7 +185,8 @@ class MahasiswaModel {
         }
     }
 
-    public function getMahasiswaById($id) {
+    public function getMahasiswaById($id)
+    {
         try {
             $query = "SELECT * FROM " . $this->table_name . " WHERE id_mahasiswa = :id";
             $stmt = $this->conn->prepare($query);
@@ -195,7 +199,8 @@ class MahasiswaModel {
         }
     }
 
-    public function getAllJurusan() {
+    public function getAllJurusan()
+    {
         try {
             $query = "SELECT id_jurusan, nama_jurusan FROM jurusan ORDER BY nama_jurusan";
             $stmt = $this->conn->prepare($query);
@@ -207,7 +212,8 @@ class MahasiswaModel {
         }
     }
 
-    public function getAllKelas() {
+    public function getAllKelas()
+    {
         try {
             $query = "SELECT k.id_kelas, k.nama_kelas, j.nama_jurusan 
                       FROM kelas k
@@ -222,7 +228,8 @@ class MahasiswaModel {
         }
     }
 
-    public function getDashboardStats() {
+    public function getDashboardStats()
+    {
         try {
             $query = "SELECT * FROM vw_dashboard";
             $stmt = $this->conn->prepare($query);
@@ -234,7 +241,8 @@ class MahasiswaModel {
         }
     }
 
-    public function getMahasiswaPerJurusan() {
+    public function getMahasiswaPerJurusan()
+    {
         try {
             $query = "SELECT 
                         j.nama_jurusan,
@@ -252,7 +260,8 @@ class MahasiswaModel {
         }
     }
 
-    public function getMahasiswaPerAngkatan() {
+    public function getMahasiswaPerAngkatan()
+    {
         try {
             $query = "SELECT 
                         tahun_masuk,
@@ -269,7 +278,8 @@ class MahasiswaModel {
         }
     }
 
-    public function getMahasiswaPerSemester() {
+    public function getMahasiswaPerSemester()
+    {
         try {
             $query = "SELECT 
                         semester,
@@ -286,41 +296,40 @@ class MahasiswaModel {
         }
     }
 
-    public function searchMahasiswa($keyword, $limit = null, $offset = null) {
+    public function searchMahasiswa($keyword, $limit = null, $offset = null)
+    {
         try {
             $query = "SELECT 
                         m.id_mahasiswa,
                         m.nim,
                         m.nama_mahasiswa,
-                        m.email,
                         m.jenis_kelamin,
-                        m.no_hp,
-                        m.tahun_masuk,
-                        m.semester,
                         m.foto,
+                        m.email,
                         j.nama_jurusan,
-                        k.nama_kelas
+                        k.nama_kelas,
+                        public.hitung_ipk(m.id_mahasiswa) as ipk
                       FROM " . $this->table_name . " m
                       LEFT JOIN jurusan j ON m.id_jurusan = j.id_jurusan
                       LEFT JOIN kelas k ON m.id_kelas = k.id_kelas
                       WHERE m.nim LIKE :keyword 
                          OR m.nama_mahasiswa LIKE :keyword
                          OR m.email LIKE :keyword
-                      ORDER BY m.id_mahasiswa DESC";
-            
+                      ORDER BY m.nama_mahasiswa ASC";
+
             if ($limit !== null && $offset !== null) {
                 $query .= " LIMIT :limit OFFSET :offset";
             }
-            
+
             $stmt = $this->conn->prepare($query);
             $keyword = "%{$keyword}%";
             $stmt->bindParam(":keyword", $keyword);
-            
+
             if ($limit !== null && $offset !== null) {
                 $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
                 $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
             }
-            
+
             $stmt->execute();
             return $stmt;
         } catch (PDOException $e) {
@@ -329,7 +338,8 @@ class MahasiswaModel {
         }
     }
 
-    public function countSearchMahasiswa($keyword) {
+    public function countSearchMahasiswa($keyword)
+    {
         try {
             $query = "SELECT COUNT(*) as total 
                       FROM " . $this->table_name . " m
@@ -348,7 +358,8 @@ class MahasiswaModel {
         }
     }
 
-    public function getMahasiswaByNIM($nim) {
+    public function getMahasiswaByNIM($nim)
+    {
         try {
             $query = "SELECT * FROM vw_detail_mahasiswa m WHERE m.nim = :nim";
             $stmt = $this->conn->prepare($query);
@@ -361,4 +372,3 @@ class MahasiswaModel {
         }
     }
 }
-?>

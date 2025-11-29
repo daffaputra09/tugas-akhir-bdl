@@ -121,6 +121,30 @@ class DosenController
         }
     }
 
+    public function toggleStatus(): void
+    {
+        try {
+            $id = $_GET['id'] ?? null;
+            $status = $_GET['status'] ?? null;
+
+            if (!$id || !$status) {
+                throw new Exception("ID atau Status tidak valid");
+            }
+
+            if ($this->model->updateStatusDosen($id, $status)) {
+                $msg = ($status == 'Aktif') ? 'Dosen berhasil diaktifkan!' : 'Dosen berhasil dinonaktifkan!';
+                header("Location: index.php?action=dosen_list&message=updated");
+            } else {
+                throw new Exception("Gagal mengubah status dosen");
+            }
+
+        } catch (Exception $e) {
+            error_log("Error toggleStatus: " . $e->getMessage());
+            header("Location: index.php?action=dosen_list&message=error");
+        }
+        exit();
+    }
+
     public function delete(): void
     {
         try {
@@ -151,29 +175,47 @@ class DosenController
             $per_page = 10;
             $offset = ($page - 1) * $per_page;
             
-            if (isset($_GET['keyword']) && !empty($_GET['keyword'])) {
-                $keyword = $_GET['keyword'];
-                $total_records = $this->model->countSearchDosen($keyword);
-                $total_pages = ceil($total_records / $per_page);
-                
-                $dosen = $this->model->searchDosen($keyword, $per_page, $offset);
-                if (!$dosen) {
-                    throw new Exception("Gagal melakukan pencarian");
-                }
-            } else {
-                $total_records = $this->model->countTotalDosen();
-                $total_pages = ceil($total_records / $per_page);
-                
-                $dosen = $this->model->getAllDosen($per_page, $offset);
-                if (!$dosen) {
-                    throw new Exception("Gagal mengambil data dosen");
-                }
+            $keyword = isset($_GET['keyword']) ? $_GET['keyword'] : '';
+            $status = isset($_GET['status']) ? $_GET['status'] : '';
+
+            $total_records = $this->model->countSearchDosen($keyword, $status);
+            $total_pages = ceil($total_records / $per_page);
+            
+            $dosen = $this->model->searchDosen($keyword, $status, $per_page, $offset);
+            
+            if (!$dosen) {
+                throw new Exception("Pencarian gagal");
             }
+
             include 'views/dosen_list.php';
         } catch (Exception $e) {
             error_log("Error in search: " . $e->getMessage());
             $error = $e->getMessage();
             include 'views/error.php';
+        }
+    }
+
+    public function jadwal(): void
+    {
+        try {
+            $id = $_GET['id'] ?? null;
+            
+            if (!$id) {
+                throw new Exception("ID Dosen tidak valid");
+            }
+
+            $dosenInfo = $this->model->getDosenById($id);
+            if (!$dosenInfo) {
+                throw new Exception("Data dosen tidak ditemukan");
+            }
+
+            $jadwal = $this->model->getJadwalDosen($id);
+            
+            include 'views/dosen_jadwal.php';
+        } catch (Exception $e) {
+            error_log("Error in jadwal: " . $e->getMessage());
+            header("Location: index.php?action=dosen_list&message=error");
+            exit();
         }
     }
 }

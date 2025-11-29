@@ -344,6 +344,26 @@ body {
     color: #be185d;
 }
 
+.badge-success {
+    background-color: #28a745;
+    color: white;
+}
+
+.badge-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.badge-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+.badge-warning {
+    background-color: #ffc107;
+    color: #212529;
+}
+
 /* Alert Messages */
 .alert {
     padding: 15px;
@@ -379,8 +399,9 @@ body {
 }
 
 .search-input {
-    width: 100%;
-    max-width: 400px;
+    width: auto;
+    min-width: 100px;
+    field-sizing: content;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 4px;

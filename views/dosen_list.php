@@ -22,10 +22,32 @@ include 'views/header.php';
     </div>
 
     <div class="search-box">
-        <form method="GET" action="index.php">
+        <form method="GET" action="index.php" style="display: flex; gap: 20px; width: 100%;">
+
             <input type="hidden" name="action" value="dosen_search">
-            <input type="text" name="keyword" class="search-input" placeholder="Cari NIP, Nama, atau Email..."
-                   value="<?php echo isset($_GET['keyword']) ? htmlspecialchars($_GET['keyword']) : ''; ?>">
+
+            <input type="text" name="keyword" class="search-input" placeholder="Cari NIP, Nama..."
+                value="<?php echo isset($_GET['keyword']) ? htmlspecialchars($_GET['keyword']) : ''; ?>"
+                style="flex: 1; padding: 10px;">
+
+            <select name="status" class="form-control" style="width: 200px; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+                <option value="">-- Semua Status --</option>
+                <?php
+                $status_filter = isset($_GET['status']) ? $_GET['status'] : '';
+                $opsi_status = ['Aktif', 'Tidak Aktif'];
+
+                foreach ($opsi_status as $st) {
+                    $selected = ($status_filter == $st) ? 'selected' : '';
+                    echo "<option value='$st' $selected>$st</option>";
+                }
+                ?>
+            </select>
+
+            <button type="submit" class="btn btn-primary" style="padding: 10px 20px;">Cari</button>
+
+            <?php if (isset($_GET['keyword']) || isset($_GET['status'])): ?>
+                <a href="index.php?action=dosen_list" class="btn btn-secondary" style="background:#6c757d; color:white; padding:10px 20px; text-decoration:none; border-radius:4px; display: flex; align-items: center;">Reset</a>
+            <?php endif; ?>
         </form>
     </div>
 
@@ -34,21 +56,20 @@ include 'views/header.php';
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>No</th>
-                        <th>NIP</th>
-                        <th>Nama Dosen</th>
-                        <th>Jurusan</th>
-                        <th>Email</th>
-                        <th>No HP</th>
-                        <th>Status</th>
-                        <th>Aksi</th>
+                        <th width="5%">No</th>
+                        <th width="15%">NIP</th>
+                        <th width="20%">Nama Dosen</th>
+                        <th width="15%">Jurusan</th>
+                        <th width="15%">Email</th>
+                        <th width="10%">No HP</th>
+                        <th width="10%">Status</th>
+                        <th width="10%">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php 
-
+                    <?php
                     $no = isset($page) ? (($page - 1) * 10 + 1) : 1;
-                    while ($row = $dosen->fetch(PDO::FETCH_ASSOC)): 
+                    while ($row = $dosen->fetch(PDO::FETCH_ASSOC)):
                     ?>
                         <tr>
                             <td><?php echo $no++; ?></td>
@@ -57,9 +78,35 @@ include 'views/header.php';
                             <td><?php echo htmlspecialchars($row['nama_jurusan'] ?? '-'); ?></td>
                             <td><?php echo htmlspecialchars($row['email'] ?? '-'); ?></td>
                             <td><?php echo htmlspecialchars($row['no_hp']); ?></td>
-                            <td><?php echo htmlspecialchars($row['status_aktif']); ?></td>
+
+                            <td>
+                                <?php
+                                $status_bersih = strtolower(trim($row['status_aktif']));
+
+                                $next_status = ($status_bersih == 'aktif') ? 'Tidak Aktif' : 'Aktif';
+
+                                if ($status_bersih == 'aktif') {
+                                    $badgeClass = 'badge-success';
+                                    $confirmMsg = "Non-aktifkan dosen ini?";
+                                } else {
+                                    $badgeClass = 'badge-secondary';
+                                    $confirmMsg = "Aktifkan kembali dosen ini?";
+                                }
+                                ?>
+
+                                <a href="index.php?action=dosen_toggle_status&id=<?php echo $row['id_dosen']; ?>&status=<?php echo $next_status; ?>"
+                                    style="text-decoration: none;"
+                                    onclick="return confirm('<?php echo $confirmMsg; ?>')">
+
+                                    <span class="badge <?php echo $badgeClass; ?>" style="cursor: pointer;" title="Klik untuk ubah status">
+                                        <?php echo htmlspecialchars($row['status_aktif']); ?>
+                                    </span>
+                                </a>
+                            </td>
+
                             <td>
                                 <div class="btn-group">
+                                    <a href="index.php?action=dosen_jadwal&id=<?php echo $row['id_dosen']; ?>" class="btn btn-primary" title="Lihat Jadwal">Jadwal</a>
                                     <a href="index.php?action=dosen_edit&id=<?php echo $row['id_dosen']; ?>" class="btn btn-edit">Edit</a>
                                     <a href="index.php?action=dosen_delete&id=<?php echo $row['id_dosen']; ?>" class="btn btn-delete" onclick="return confirm('Apakah Anda yakin ingin menghapus dosen ini?')">Hapus</a>
                                 </div>
@@ -69,50 +116,44 @@ include 'views/header.php';
                 </tbody>
             </table>
         </div>
-        
-        <?php 
-        if (isset($total_pages) && $total_pages > 1): 
+
+        <?php
+        if (isset($total_pages) && $total_pages > 1):
             $current_page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
             $action = isset($_GET['action']) ? $_GET['action'] : 'dosen_list';
-            $keyword = isset($_GET['keyword']) ? htmlspecialchars($_GET['keyword']) : '';
-            
+
+            $keyword = isset($_GET['keyword']) ? $_GET['keyword'] : '';
+            $status = isset($_GET['status']) ? $_GET['status'] : '';
+
             echo '<div class="pagination">';
 
-            if ($current_page > 1) {
-                $first_params = ['action' => $action, 'page' => 1];
-                if (!empty($keyword)) $first_params['keyword'] = $keyword;
-                echo '<a href="index.php?' . http_build_query($first_params) . '" class="pagination-btn">« Pertama</a>';
-            }
+            $buildLink = function ($pg) use ($action, $keyword, $status) {
+                $params = ['action' => $action, 'page' => $pg];
+                if (!empty($keyword)) $params['keyword'] = $keyword;
+                if (!empty($status)) $params['status'] = $status;
+                return 'index.php?' . http_build_query($params);
+            };
 
             if ($current_page > 1) {
-                $prev_params = ['action' => $action, 'page' => $current_page - 1];
-                if (!empty($keyword)) $prev_params['keyword'] = $keyword;
-                echo '<a href="index.php?' . http_build_query($prev_params) . '" class="pagination-btn">‹ Sebelumnya</a>';
+                echo '<a href="' . $buildLink(1) . '" class="pagination-btn">« Pertama</a>';
+                echo '<a href="' . $buildLink($current_page - 1) . '" class="pagination-btn">‹ Sebelumnya</a>';
             }
-            
+
             $start_page = max(1, $current_page - 2);
             $end_page = min($total_pages, $current_page + 2);
+
             for ($i = $start_page; $i <= $end_page; $i++) {
-                $page_params = ['action' => $action, 'page' => $i];
-                if (!empty($keyword)) $page_params['keyword'] = $keyword;
                 $active_class = ($i == $current_page) ? 'active' : '';
-                echo '<a href="index.php?' . http_build_query($page_params) . '" class="pagination-btn ' . $active_class . '">' . $i . '</a>';
+                echo '<a href="' . $buildLink($i) . '" class="pagination-btn ' . $active_class . '">' . $i . '</a>';
             }
 
             if ($current_page < $total_pages) {
-                $next_params = ['action' => $action, 'page' => $current_page + 1];
-                if (!empty($keyword)) $next_params['keyword'] = $keyword;
-                echo '<a href="index.php?' . http_build_query($next_params) . '" class="pagination-btn">Selanjutnya ›</a>';
-            }
-
-            if ($current_page < $total_pages) {
-                $last_params = ['action' => $action, 'page' => $total_pages];
-                if (!empty($keyword)) $last_params['keyword'] = $keyword;
-                echo '<a href="index.php?' . http_build_query($last_params) . '" class="pagination-btn">Terakhir »</a>';
+                echo '<a href="' . $buildLink($current_page + 1) . '" class="pagination-btn">Selanjutnya ›</a>';
+                echo '<a href="' . $buildLink($total_pages) . '" class="pagination-btn">Terakhir »</a>';
             }
             echo '</div>';
             echo '<div class="pagination-info">Menampilkan halaman ' . $current_page . ' dari ' . $total_pages . ' (Total: ' . $total_records . ' data)</div>';
-        endif; 
+        endif;
         ?>
     <?php else: ?>
         <div class="empty-state">
@@ -123,5 +164,3 @@ include 'views/header.php';
 </div>
 
 <?php include 'views/footer.php'; ?>
-
-

@@ -358,16 +358,16 @@ class MahasiswaModel
         }
     }
 
-    public function getMahasiswaByNIM($nim)
+    public function getDetailMahasiswa($id)
     {
         try {
-            $query = "SELECT * FROM vw_detail_mahasiswa m WHERE m.nim = :nim";
+            $query = "SELECT * FROM vw_detail_mahasiswa m WHERE m.id_mahasiswa = :id";
             $stmt = $this->conn->prepare($query);
-            $stmt->bindParam(":nim", $nim);
+            $stmt->bindParam(":id", $id);
             $stmt->execute();
             return $stmt->fetch(PDO::FETCH_ASSOC);
         } catch (PDOException $e) {
-            error_log("Error getMahasiswaByNIM: " . $e->getMessage());
+            error_log("Error getDetailMahasiswa: " . $e->getMessage());
             return false;
         }
     }

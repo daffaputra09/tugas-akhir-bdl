@@ -217,13 +217,13 @@ class MahasiswaController
     public function detail(): void
     {
         try {
-            $nim = $_GET['nim'] ?? null;
+            $id = $_GET['id'] ?? null;
             
-            if (!$nim) {
-                throw new Exception("NIM tidak valid");
+            if (!$id) {
+                throw new Exception("ID tidak valid");
             }
 
-            $mahasiswa = $this->model->getMahasiswaByNIM($nim);
+            $mahasiswa = $this->model->getDetailMahasiswa($id);
             if (!$mahasiswa) {
                 throw new Exception("Data mahasiswa tidak ditemukan");
             }

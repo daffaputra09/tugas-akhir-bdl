@@ -371,4 +371,141 @@ class MahasiswaModel
             return false;
         }
     }
+
+    public function getTranskrip($id_mahasiswa, $limit = null, $offset = null)
+    {
+        try {
+            $query = "SELECT 
+                        n.id_nilai,
+                        mk.kode_mk,
+                        mk.nama_mk,
+                        mk.sks,
+                        mk.semester as semester_mk,
+                        n.tipe_nilai,
+                        n.nilai_angka,
+                        n.nilai_huruf,
+                        n.tanggal_input,
+                        CASE 
+                            WHEN n.nilai_huruf = 'A' THEN 4.0
+                            WHEN n.nilai_huruf = 'B' THEN 3.0
+                            WHEN n.nilai_huruf = 'C' THEN 2.0
+                            WHEN n.nilai_huruf = 'D' THEN 1.0
+                            ELSE 0.0
+                        END as bobot
+                      FROM nilai n
+                      INNER JOIN matakuliah mk ON n.id_mk = mk.id_mk
+                      WHERE n.id_mahasiswa = :id_mahasiswa
+                      ORDER BY mk.semester ASC, mk.kode_mk ASC, n.tanggal_input DESC";
+            
+            if ($limit !== null && $offset !== null) {
+                $query .= " LIMIT :limit OFFSET :offset";
+            }
+            
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(":id_mahasiswa", $id_mahasiswa, PDO::PARAM_INT);
+            
+            if ($limit !== null && $offset !== null) {
+                $stmt->bindValue(':limit', (int)$limit, PDO::PARAM_INT);
+                $stmt->bindValue(':offset', (int)$offset, PDO::PARAM_INT);
+            }
+            
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error getTranskrip: " . $e->getMessage());
+            return array();
+        }
+    }
+
+    public function countTranskrip($id_mahasiswa)
+    {
+        try {
+            $query = "SELECT COUNT(*) as total
+                      FROM nilai n
+                      INNER JOIN matakuliah mk ON n.id_mk = mk.id_mk
+                      WHERE n.id_mahasiswa = :id_mahasiswa";
+            
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(":id_mahasiswa", $id_mahasiswa, PDO::PARAM_INT);
+            $stmt->execute();
+            $result = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $result['total'];
+        } catch (PDOException $e) {
+            error_log("Error countTranskrip: " . $e->getMessage());
+            return 0;
+        }
+    }
+
+    public function getKHSBySemester($id_mahasiswa)
+    {
+        try {
+            $query = "SELECT 
+                        mk.semester as semester_mk,
+                        mk.kode_mk,
+                        mk.nama_mk,
+                        mk.sks,
+                        MAX(n.nilai_angka) as nilai_angka,
+                        MAX(n.nilai_huruf) as nilai_huruf,
+                        CASE 
+                            WHEN MAX(n.nilai_huruf) = 'A' THEN 4.0
+                            WHEN MAX(n.nilai_huruf) = 'B' THEN 3.0
+                            WHEN MAX(n.nilai_huruf) = 'C' THEN 2.0
+                            WHEN MAX(n.nilai_huruf) = 'D' THEN 1.0
+                            ELSE 0.0
+                        END as bobot,
+                        (mk.sks * CASE 
+                            WHEN MAX(n.nilai_huruf) = 'A' THEN 4.0
+                            WHEN MAX(n.nilai_huruf) = 'B' THEN 3.0
+                            WHEN MAX(n.nilai_huruf) = 'C' THEN 2.0
+                            WHEN MAX(n.nilai_huruf) = 'D' THEN 1.0
+                            ELSE 0.0
+                        END) as mutu
+                      FROM nilai n
+                      INNER JOIN matakuliah mk ON n.id_mk = mk.id_mk
+                      WHERE n.id_mahasiswa = :id_mahasiswa
+                      GROUP BY mk.id_mk, mk.semester, mk.kode_mk, mk.nama_mk, mk.sks
+                      ORDER BY mk.semester ASC, mk.kode_mk ASC";
+            
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(":id_mahasiswa", $id_mahasiswa, PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error getKHSBySemester: " . $e->getMessage());
+            return array();
+        }
+    }
+
+    public function getStatistikAkademik($id_mahasiswa)
+    {
+        try {
+            $query = "SELECT 
+                        COUNT(DISTINCT n.id_mk) as total_mk_diambil,
+                        SUM(mk.sks) as total_sks_diambil,
+                        AVG(CASE 
+                            WHEN n.nilai_huruf = 'A' THEN 4.0
+                            WHEN n.nilai_huruf = 'B' THEN 3.0
+                            WHEN n.nilai_huruf = 'C' THEN 2.0
+                            WHEN n.nilai_huruf = 'D' THEN 1.0
+                            ELSE 0.0
+                        END) as ipk,
+                        SUM(CASE WHEN n.nilai_huruf IN ('A', 'B', 'C', 'D') THEN 1 ELSE 0 END) as mk_lulus,
+                        SUM(CASE WHEN n.nilai_huruf = 'E' THEN 1 ELSE 0 END) as mk_tidak_lulus
+                      FROM (
+                        SELECT n.id_mahasiswa, n.id_mk, MAX(n.nilai_huruf) as nilai_huruf
+                        FROM nilai n
+                        WHERE n.id_mahasiswa = :id_mahasiswa
+                        GROUP BY n.id_mahasiswa, n.id_mk
+                      ) n
+                      INNER JOIN matakuliah mk ON n.id_mk = mk.id_mk";
+            
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(":id_mahasiswa", $id_mahasiswa, PDO::PARAM_INT);
+            $stmt->execute();
+            return $stmt->fetch(PDO::FETCH_ASSOC);
+        } catch (PDOException $e) {
+            error_log("Error getStatistikAkademik: " . $e->getMessage());
+            return false;
+        }
+    }
 }

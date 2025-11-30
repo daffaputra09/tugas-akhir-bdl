@@ -53,7 +53,7 @@ include 'views/header.php';
                 <div class="stat-label">Total Jurusan</div>
                 <div class="stat-value"><?php echo number_format($stats['total_jurusan']) ?></div>
             </div>
-        </div>
+    </div>
     </div>
 
     <!-- Gender Stats -->
@@ -85,8 +85,8 @@ include 'views/header.php';
             <div class="stat-content">
                 <div class="stat-label">Mahasiswa Perempuan</div>
                 <div class="stat-value"><?php echo number_format($stats['total_perempuan']); ?></div>
-            </div>
-        </div>
+    </div>
+</div>
     </div>
 
     <!-- Nilai Stats -->
@@ -172,11 +172,11 @@ include 'views/header.php';
                 <path d="M8 12h8"></path>
                 <path d="M12 8v8"></path>
             </svg>
-        </div>
+    </div>
         <div class="stat-content-lg">
             <div class="stat-label-lg">Rata-rata Nilai Keseluruhan</div>
             <div class="stat-value-lg"><?php echo number_format($stats['avg_per_mahasiswa'], 2, ',', '.'); ?></div>
             <div class="stat-subtitle">Berdasarkan semua mahasiswa aktif</div>
-        </div>
+</div>
     </div>
 </div>

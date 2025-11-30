@@ -227,6 +227,32 @@ class MahasiswaController
             if (!$mahasiswa) {
                 throw new Exception("Data mahasiswa tidak ditemukan");
             }
+
+            $khs = $this->model->getKHSBySemester($id);
+            $statistik = $this->model->getStatistikAkademik($id);
+            
+            $transkrip_page = isset($_GET['transkrip_page']) ? (int)$_GET['transkrip_page'] : 1;
+            $transkrip_per_page = 10;
+            $transkrip_offset = ($transkrip_page - 1) * $transkrip_per_page;
+            
+            $transkrip_total = $this->model->countTranskrip($id);
+            $transkrip_total_pages = ceil($transkrip_total / $transkrip_per_page);
+            $transkrip = $this->model->getTranskrip($id, $transkrip_per_page, $transkrip_offset);
+            
+            $khs_grouped = array();
+            foreach ($khs as $row) {
+                $semester = $row['semester_mk'];
+                if (!isset($khs_grouped[$semester])) {
+                    $khs_grouped[$semester] = array(
+                        'matakuliah' => array(),
+                        'total_sks' => 0,
+                        'total_mutu' => 0
+                    );
+                }
+                $khs_grouped[$semester]['matakuliah'][] = $row;
+                $khs_grouped[$semester]['total_sks'] += $row['sks'];
+                $khs_grouped[$semester]['total_mutu'] += $row['mutu'];
+            }
             
             include 'views/mahasiswa_detail.php';
         } catch (Exception $e) {

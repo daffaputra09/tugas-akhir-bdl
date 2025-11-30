@@ -18,13 +18,13 @@ include 'views/header.php';
             <div class="form-group">
                 <label for="nip" class="form-label">NIP *</label>
                 <input type="text" id="nip" name="nip" class="form-input" placeholder="Contoh: 19801231 200501 1 001"
-                       value="<?php echo isset($dosen) ? htmlspecialchars($dosen['nip']) : ''; ?>" required>
+                    value="<?php echo isset($dosen) ? htmlspecialchars($dosen['nip']) : ''; ?>" required>
             </div>
 
             <div class="form-group">
                 <label for="nama_dosen" class="form-label">Nama Dosen *</label>
                 <input type="text" id="nama_dosen" name="nama_dosen" class="form-input" placeholder="Nama lengkap"
-                       value="<?php echo isset($dosen) ? htmlspecialchars($dosen['nama_dosen']) : ''; ?>" required>
+                    value="<?php echo isset($dosen) ? htmlspecialchars($dosen['nama_dosen']) : ''; ?>" required>
             </div>
         </div>
 
@@ -32,13 +32,13 @@ include 'views/header.php';
             <div class="form-group">
                 <label for="email" class="form-label">Email</label>
                 <input type="email" id="email" name="email" class="form-input" placeholder="email@kampus.ac.id"
-                       value="<?php echo isset($dosen) ? htmlspecialchars($dosen['email']) : ''; ?>">
+                    value="<?php echo isset($dosen) ? htmlspecialchars($dosen['email']) : ''; ?>">
             </div>
 
             <div class="form-group">
                 <label for="no_hp" class="form-label">No HP *</label>
                 <input type="text" id="no_hp" name="no_hp" class="form-input" placeholder="081234567890"
-                       value="<?php echo isset($dosen) ? htmlspecialchars($dosen['no_hp']) : ''; ?>" required>
+                    value="<?php echo isset($dosen) ? htmlspecialchars($dosen['no_hp']) : ''; ?>" required>
             </div>
         </div>
 
@@ -60,10 +60,10 @@ include 'views/header.php';
                 <label for="status_aktif" class="form-label">Status</label>
                 <select id="status_aktif" name="status_aktif" class="form-select">
                     <?php
-                        $status = isset($dosen) ? $dosen['status_aktif'] : 'Aktif';
+                    $status = isset($dosen) ? trim($dosen['status_aktif']) : 'Aktif';
                     ?>
-                    <option value="Aktif" <?php echo ($status == 'Aktif') ? 'selected' : ''; ?>>Aktif</option>
-                    <option value="Non Aktif" <?php echo ($status == 'Non Aktif') ? 'selected' : ''; ?>>Tidak  Aktif</option>
+                    <option value="Aktif" <?= ($status == 'Aktif') ? 'selected' : '' ?>>Aktif</option>
+                    <option value="Tidak Aktif" <?= ($status == 'Tidak Aktif') ? 'selected' : '' ?>>Tidak Aktif</option>
                 </select>
             </div>
         </div>
@@ -76,5 +76,3 @@ include 'views/header.php';
 </div>
 
 <?php include 'views/footer.php'; ?>
-
-
